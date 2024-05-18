@@ -25,4 +25,4 @@ These are the tools and technologies that i used to build the app!
 * **CSS**
 * **JavaScript**
 
-<br><img align="left" alt="coding" width="550" src="outcome.gif">
+<br><img align="left" alt="coding" width="600" src="outcome.gif">
