@@ -1,7 +1,7 @@
 # AI-Text-Summarizer-App-Starter
 ## Tech Stack
 
-These are the tools and technologies that we’ll be using to build our app!
+These are the tools and technologies that i used to build the app!
 
 ### API platform
 
