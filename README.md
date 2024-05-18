@@ -1,7 +1,7 @@
 # AI-Text-Summarizer-App-Starter
 ## Tech Stack
 
-This document outlines the technologies used to build this app.
+These are the tools and technologies that we’ll be using to build our app!
 
 ### API platform
 
@@ -14,7 +14,8 @@ This document outlines the technologies used to build this app.
 ### Back End
 
 * **Node.js** 
-    * **Express** framework
+* **Express**
+* **framework**
 
 * **Hugging Face Inference API** 
 
