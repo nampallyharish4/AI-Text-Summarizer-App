@@ -24,3 +24,5 @@ These are the tools and technologies that we’ll be using to build our app!
 * **HTML**
 * **CSS**
 * **JavaScript**
+
+<br><img align="left" alt="coding" width="400" src="outcome.gif">
