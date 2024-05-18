@@ -1,4 +1,4 @@
-# AI-Text-Summarizer-App-Starter
+# AI-Text-Summarizer-App
 ## Tech Stack
 
 These are the tools and technologies that i used to build the app!
