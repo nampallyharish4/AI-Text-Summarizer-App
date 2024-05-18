@@ -1,20 +1,25 @@
 # AI-Text-Summarizer-App-Starter
-<h1>Tech stack</h1>
-<h2>These are the tools and technologies that we’ll be using to build our app!</h2>
+## Tech Stack
 
-API platform
+This document outlines the technologies used to build this app.
 
-Postman
-Code Editor/Deployment tool
+### API platform
 
-Replit 
-Back end
+* **Postman** 
 
-Node.js
-Express
-Hugging Face Inference API
-Front end
+### Code Editor/Deployment tool
 
-HTML
-CSS
-JavaScript
+* **Replit** 
+
+### Back End
+
+* **Node.js** 
+    * **Express** framework
+
+* **Hugging Face Inference API** 
+
+### Front End
+
+* **HTML**
+* **CSS**
+* **JavaScript**
