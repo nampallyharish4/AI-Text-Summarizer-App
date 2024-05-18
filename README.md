@@ -1,6 +1,6 @@
 # AI-Text-Summarizer-App-Starter
-<h1>Tech stack
-These are the tools and technologies that we’ll be using to build our app!
+<h1>Tech stack</h1>
+<h2>These are the tools and technologies that we’ll be using to build our app!</h2>
 
 API platform
 
@@ -17,4 +17,4 @@ Front end
 
 HTML
 CSS
-JavaScript</h1>
+JavaScript
