@@ -1,7 +1,5 @@
-const axios = require('axios');
-
 // This is the function where the call to the API is made. Returns the summarized text as a string.
-
+const axios = require('axios');
 async function summarizeText(text) {
 
 
@@ -17,22 +15,22 @@ async function summarizeText(text) {
     method: 'post',
     maxBodyLength: Infinity,
     url: 'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
-    headers: { 
-      'Content-Type': 'application/json', 
+    headers: {
+      'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + process.env['ACCESS_TOKEN']
     },
-    data : data
+    data: data
   };
 
-  
-    try {
-      const response = await axios.request(config);
-      return response.data[0].summary_text;
-    }
-    catch (error) {
-      console.log(error);
-    }
- 
+
+  try {
+    const response = await axios.request(config);
+    return response.data[0].summary_text;
+  }
+  catch (error) {
+    console.log(error);
+  }
+
 
 }
 
