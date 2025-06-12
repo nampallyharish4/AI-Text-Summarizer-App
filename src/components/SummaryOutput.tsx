@@ -1,17 +1,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Copy, Download, FileText } from 'lucide-react';
+import { Sparkles, Copy, Download, FileText, BarChart3 } from 'lucide-react';
 
 interface SummaryOutputProps {
   summary: string;
   onCopy: () => void;
   onDownload: () => void;
+  stats?: {
+    originalLength: number;
+    summaryLength: number;
+    compressionRatio: number;
+  } | null;
 }
 
 const SummaryOutput: React.FC<SummaryOutputProps> = ({
   summary,
   onCopy,
-  onDownload
+  onDownload,
+  stats
 }) => {
   const wordCount = summary.split(/\s+/).filter(word => word.length > 0).length;
 
@@ -91,9 +97,35 @@ const SummaryOutput: React.FC<SummaryOutputProps> = ({
       </div>
 
       {summary && (
-        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-          <span>Summary: {wordCount} words</span>
-          <span>{summary.length} characters</span>
+        <div className="space-y-3">
+          {/* Basic Stats */}
+          <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+            <span>Summary: {wordCount} words</span>
+            <span>{summary.length} characters</span>
+          </div>
+
+          {/* Advanced Stats */}
+          {stats && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-700 shadow-sm"
+            >
+              <div className="flex items-center space-x-2 mb-2">
+                <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                  Compression Analysis
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-300">
+                <div>Original: {stats.originalLength.toLocaleString()} chars</div>
+                <div>Summary: {stats.summaryLength.toLocaleString()} chars</div>
+                <div className="col-span-2 font-medium text-green-700 dark:text-green-400">
+                  Reduced by {stats.compressionRatio}%
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
       )}
     </motion.div>

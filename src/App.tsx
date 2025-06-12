@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Sparkles, Copy, Download, RefreshCw } from 'lucide-react';
+import { Sun, Moon, Sparkles, Copy, Download, RefreshCw, AlertTriangle } from 'lucide-react';
 import TextInput from './components/TextInput';
 import SummaryOutput from './components/SummaryOutput';
 import LoadingAnimation from './components/LoadingAnimation';
@@ -12,6 +12,11 @@ function App() {
   const [summary, setSummary] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [summaryStats, setSummaryStats] = useState<{
+    originalLength: number;
+    summaryLength: number;
+    compressionRatio: number;
+  } | null>(null);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -38,9 +43,15 @@ function App() {
       return;
     }
 
+    if (inputText.length > 100000) {
+      setError('Text is too long. Maximum 100,000 characters allowed');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     setSummary('');
+    setSummaryStats(null);
 
     try {
       const response = await fetch('/api/summarize', {
@@ -53,15 +64,36 @@ function App() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to summarize text');
+        throw new Error(data.error || `HTTP error! status: ${response.status}`);
       }
 
-      const { summary: summaryText } = await response.json();
-      setSummary(summaryText);
-    } catch (err) {
-      setError('Failed to summarize text. Please try again.');
+      setSummary(data.summary);
+      setSummaryStats({
+        originalLength: data.originalLength,
+        summaryLength: data.summaryLength,
+        compressionRatio: data.compressionRatio
+      });
+
+    } catch (err: any) {
       console.error('Summarization error:', err);
+      
+      // Handle different types of errors
+      if (err.message.includes('Failed to fetch')) {
+        setError('Unable to connect to the server. Please make sure the backend is running.');
+      } else if (err.message.includes('timeout')) {
+        setError('Request timed out. Please try with shorter text or try again later.');
+      } else if (err.message.includes('Rate limit')) {
+        setError('Rate limit exceeded. Please wait a few minutes before trying again.');
+      } else if (err.message.includes('API key')) {
+        setError('API configuration error. Please contact the administrator.');
+      } else if (err.message.includes('model is loading')) {
+        setError('AI model is loading. Please try again in a few moments.');
+      } else {
+        setError(err.message || 'Failed to summarize text. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -70,6 +102,7 @@ function App() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      // You could add a toast notification here
     } catch (err) {
       console.error('Failed to copy text:', err);
     }
@@ -77,9 +110,20 @@ function App() {
 
   const downloadSummary = () => {
     const element = document.createElement('a');
-    const file = new Blob([summary], { type: 'text/plain' });
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `summary-${timestamp}.txt`;
+    
+    let content = `AI Text Summary\n`;
+    content += `Generated on: ${new Date().toLocaleString()}\n`;
+    content += `Original text length: ${summaryStats?.originalLength || inputText.length} characters\n`;
+    content += `Summary length: ${summaryStats?.summaryLength || summary.length} characters\n`;
+    content += `Compression ratio: ${summaryStats?.compressionRatio || 0}%\n`;
+    content += `\n${'='.repeat(50)}\n\n`;
+    content += summary;
+    
+    const file = new Blob([content], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
-    element.download = 'summary.txt';
+    element.download = filename;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -89,6 +133,7 @@ function App() {
     setInputText('');
     setSummary('');
     setError('');
+    setSummaryStats(null);
   };
 
   return (
@@ -192,7 +237,7 @@ function App() {
             />
             <StatsCard
               title="Compression"
-              value={summary ? `${Math.round((1 - summary.length / inputText.length) * 100)}%` : '0%'}
+              value={summaryStats ? `${summaryStats.compressionRatio}%` : '0%'}
               subtitle="text reduction"
               icon="⚡"
             />
@@ -228,6 +273,7 @@ function App() {
                   summary={summary}
                   onCopy={() => copyToClipboard(summary)}
                   onDownload={downloadSummary}
+                  stats={summaryStats}
                 />
               )}
             </motion.div>
@@ -285,6 +331,29 @@ function App() {
               <span>Clear All</span>
             </motion.button>
           </motion.div>
+
+          {/* API Status Warning */}
+          {error && error.includes('API') && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-700 rounded-2xl shadow-lg"
+            >
+              <div className="flex items-center space-x-3">
+                <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                <div>
+                  <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200">
+                    Setup Required
+                  </h3>
+                  <p className="text-yellow-700 dark:text-yellow-300 mt-1">
+                    To use the AI summarization feature, you need to configure your Hugging Face API key. 
+                    Create a <code className="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">.env</code> file 
+                    in the server directory with your API key.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </main>
 
         {/* Footer */}
