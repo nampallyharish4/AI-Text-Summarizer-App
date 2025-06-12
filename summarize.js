@@ -1,8 +1,10 @@
+// Load environment variables from .env file
+require('dotenv').config();
+
 // This is the function where the call to the API is made. Returns the summarized text as a string.
 const axios = require('axios');
+
 async function summarizeText(text) {
-
-
   let data = JSON.stringify({
     "inputs": text,
     "parameters": {
@@ -22,7 +24,6 @@ async function summarizeText(text) {
     data: data
   };
 
-
   try {
     const response = await axios.request(config);
     return response.data[0].summary_text;
@@ -30,10 +31,7 @@ async function summarizeText(text) {
   catch (error) {
     console.log(error);
   }
-
-
 }
 
 // Allows for summarizeText() to be called outside of this file
-
 module.exports = summarizeText;
