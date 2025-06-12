@@ -16,11 +16,11 @@ body {
 
 @layer components {
   .glass {
-    @apply backdrop-blur-xl bg-white/20 dark:bg-black/10 border border-white/30 dark:border-white/20;
+    @apply backdrop-blur-xl bg-white/20 dark:bg-black/30 border border-white/30 dark:border-gray-800;
   }
   
   .glass-strong {
-    @apply backdrop-blur-2xl bg-white/30 dark:bg-black/20 border border-white/40 dark:border-white/30;
+    @apply backdrop-blur-2xl bg-white/30 dark:bg-black/50 border border-white/40 dark:border-gray-700;
   }
   
   .gradient-bg {
@@ -36,7 +36,7 @@ body {
   }
   
   .dark-gradient-bg {
-    background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #533483);
+    background: linear-gradient(-45deg, #000000, #111111, #1a1a1a, #222222);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
   }
@@ -64,9 +64,9 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-400 dark:bg-white/20 rounded-full;
+  @apply bg-gray-400 dark:bg-gray-600 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-500 dark:bg-white/30;
+  @apply bg-gray-500 dark:bg-gray-500;
 }

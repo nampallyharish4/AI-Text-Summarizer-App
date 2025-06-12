@@ -35,7 +35,7 @@ const SummaryOutput: React.FC<SummaryOutputProps> = ({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={onCopy}
-              className="p-2 glass rounded-xl hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300"
+              className="p-2 glass rounded-xl hover:bg-white/30 dark:hover:bg-black/50 transition-all duration-300"
               title="Copy summary"
             >
               <Copy className="w-4 h-4 text-gray-700 dark:text-white" />
@@ -44,7 +44,7 @@ const SummaryOutput: React.FC<SummaryOutputProps> = ({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={onDownload}
-              className="p-2 glass rounded-xl hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300"
+              className="p-2 glass rounded-xl hover:bg-white/30 dark:hover:bg-black/50 transition-all duration-300"
               title="Download summary"
             >
               <Download className="w-4 h-4 text-gray-700 dark:text-white" />
@@ -58,14 +58,14 @@ const SummaryOutput: React.FC<SummaryOutputProps> = ({
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 bg-white/20 dark:bg-black/10 border border-white/30 dark:border-white/20 rounded-2xl min-h-80"
+            className="p-4 bg-white/20 dark:bg-black/30 border border-white/30 dark:border-gray-700 rounded-2xl min-h-80"
           >
             <p className="text-gray-800 dark:text-white leading-relaxed whitespace-pre-wrap">
               {summary}
             </p>
           </motion.div>
         ) : (
-          <div className="flex flex-col items-center justify-center p-8 bg-white/10 dark:bg-black/5 border border-white/20 dark:border-white/10 rounded-2xl min-h-80">
+          <div className="flex flex-col items-center justify-center p-8 bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-800 rounded-2xl min-h-80">
             <motion.div
               animate={{ 
                 scale: [1, 1.1, 1],
@@ -78,12 +78,12 @@ const SummaryOutput: React.FC<SummaryOutputProps> = ({
               }}
               className="p-4 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 mb-4"
             >
-              <FileText className="w-8 h-8 text-gray-600 dark:text-white/50" />
+              <FileText className="w-8 h-8 text-gray-600 dark:text-gray-400" />
             </motion.div>
-            <p className="text-gray-600 dark:text-white/50 text-center">
+            <p className="text-gray-600 dark:text-gray-300 text-center">
               Your AI-generated summary will appear here
             </p>
-            <p className="text-gray-500 dark:text-white/30 text-sm text-center mt-2">
+            <p className="text-gray-500 dark:text-gray-400 text-sm text-center mt-2">
               Enter at least 200 characters and click "Summarize Text"
             </p>
           </div>
@@ -91,7 +91,7 @@ const SummaryOutput: React.FC<SummaryOutputProps> = ({
       </div>
 
       {summary && (
-        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-white/70">
+        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-300">
           <span>Summary: {wordCount} words</span>
           <span>{summary.length} characters</span>
         </div>

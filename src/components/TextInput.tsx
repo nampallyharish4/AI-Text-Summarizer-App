@@ -46,7 +46,7 @@ const TextInput: React.FC<TextInputProps> = ({
           onChange={(e) => onChange(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Paste your text here to summarize... (Minimum 200 characters, Maximum 100,000 characters)"
-          className="w-full h-80 p-4 bg-white/20 dark:bg-black/10 border border-white/30 dark:border-white/20 rounded-2xl text-gray-800 dark:text-white placeholder-gray-600 dark:placeholder-white/50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300"
+          className="w-full h-80 p-4 bg-white/20 dark:bg-black/30 border border-white/30 dark:border-gray-700 rounded-2xl text-gray-800 dark:text-white placeholder-gray-600 dark:placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300"
           maxLength={100000}
         />
         
@@ -62,11 +62,11 @@ const TextInput: React.FC<TextInputProps> = ({
 
       {/* Stats */}
       <div className="flex justify-between items-center mb-4">
-        <div className="flex space-x-4 text-sm text-gray-600 dark:text-white/70">
+        <div className="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
           <span>Words: {wordCount.toLocaleString()}</span>
           <span>Characters: {characterCount.toLocaleString()}</span>
         </div>
-        <div className="text-sm text-gray-600 dark:text-white/70">
+        <div className="text-sm text-gray-600 dark:text-gray-300">
           Ctrl + Enter to summarize
         </div>
       </div>
@@ -76,7 +76,7 @@ const TextInput: React.FC<TextInputProps> = ({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-2 p-3 bg-red-100 dark:bg-red-500/20 border border-red-300 dark:border-red-500/30 rounded-xl mb-4"
+          className="flex items-center space-x-2 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl mb-4"
         >
           <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
           <span className="text-red-700 dark:text-red-400 text-sm">{error}</span>
@@ -84,7 +84,7 @@ const TextInput: React.FC<TextInputProps> = ({
       )}
 
       {/* Progress bar */}
-      <div className="w-full bg-gray-200 dark:bg-white/10 rounded-full h-2 mb-4">
+      <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2 mb-4">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${Math.min((characterCount / 200) * 100, 100)}%` }}
@@ -97,7 +97,7 @@ const TextInput: React.FC<TextInputProps> = ({
       </div>
 
       {/* Validation message */}
-      <div className="text-sm text-gray-600 dark:text-white/60">
+      <div className="text-sm text-gray-600 dark:text-gray-300">
         {characterCount < 200 && (
           <span className="text-yellow-600 dark:text-yellow-400">
             Need {200 - characterCount} more characters to summarize

@@ -22,12 +22,12 @@ const LoadingAnimation: React.FC = () => {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-20 h-20 border-4 border-gray-300 dark:border-white/20 border-t-blue-500 rounded-full"
+            className="w-20 h-20 border-4 border-gray-300 dark:border-gray-700 border-t-blue-500 rounded-full"
           />
           <motion.div
             animate={{ rotate: -360 }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-2 w-16 h-16 border-4 border-gray-200 dark:border-white/10 border-b-purple-500 rounded-full"
+            className="absolute inset-2 w-16 h-16 border-4 border-gray-200 dark:border-gray-800 border-b-purple-500 rounded-full"
           />
           <motion.div
             animate={{ 
@@ -82,7 +82,7 @@ const LoadingAnimation: React.FC = () => {
           <h4 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
             Analyzing Your Text
           </h4>
-          <p className="text-gray-600 dark:text-white/70">
+          <p className="text-gray-600 dark:text-gray-300">
             Our AI is processing and summarizing your content...
           </p>
         </motion.div>

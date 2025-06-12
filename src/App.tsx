@@ -100,7 +100,7 @@ function App() {
         <motion.header 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-strong sticky top-0 z-50 border-b border-white/20 dark:border-white/20"
+          className="glass-strong sticky top-0 z-50 border-b border-white/20 dark:border-gray-800"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
@@ -165,7 +165,7 @@ function App() {
                 Concise Summaries
               </span>
             </h2>
-            <p className="text-xl text-gray-700 dark:text-white/80 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               Leverage the power of AI to quickly summarize articles, research papers, 
               and any lengthy text content with precision and clarity.
             </p>
@@ -257,7 +257,7 @@ function App() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => copyToClipboard(summary)}
-                  className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300 flex items-center space-x-2"
+                  className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/30 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2"
                 >
                   <Copy className="w-5 h-5" />
                   <span>Copy Summary</span>
@@ -267,7 +267,7 @@ function App() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={downloadSummary}
-                  className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300 flex items-center space-x-2"
+                  className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/30 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2"
                 >
                   <Download className="w-5 h-5" />
                   <span>Download</span>
@@ -279,7 +279,7 @@ function App() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={clearAll}
-              className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/30 dark:hover:bg-white/20 transition-all duration-300 flex items-center space-x-2"
+              className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/30 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2"
             >
               <RefreshCw className="w-5 h-5" />
               <span>Clear All</span>
@@ -292,14 +292,14 @@ function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
-          className="glass-strong border-t border-white/20 dark:border-white/20 mt-16"
+          className="glass-strong border-t border-white/20 dark:border-gray-800 mt-16"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center">
-              <p className="text-gray-700 dark:text-white/80">
+              <p className="text-gray-700 dark:text-gray-300">
                 Developed with ❤️ by Harish Nampally
               </p>
-              <p className="text-gray-600 dark:text-white/60 text-sm mt-2">
+              <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
                 Powered by Hugging Face AI • Built with React & Tailwind CSS
               </p>
             </div>
