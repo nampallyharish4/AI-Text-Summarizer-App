@@ -49,7 +49,7 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text_to_summarize: inputText,
+          text: inputText,
         }),
       });
 
@@ -57,7 +57,7 @@ function App() {
         throw new Error('Failed to summarize text');
       }
 
-      const summaryText = await response.text();
+      const { summary: summaryText } = await response.json();
       setSummary(summaryText);
     } catch (err) {
       setError('Failed to summarize text. Please try again.');

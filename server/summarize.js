@@ -1,47 +1,24 @@
+const express = require('express');
 const axios = require('axios');
+const router = express.Router();
 
-async function summarizeText(text) {
-  if (!process.env.ACCESS_TOKEN) {
-    throw new Error('ACCESS_TOKEN environment variable is not set');
-  }
-
-  const data = JSON.stringify({
-    inputs: text,
-    parameters: {
-      max_length: 150,
-      min_length: 40,
-      do_sample: false
-    }
-  });
-
-  const config = {
-    method: 'post',
-    maxBodyLength: Infinity,
-    url: 'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`
-    },
-    data: data
-  };
-
+router.post('/summarize', async (req, res) => {
   try {
-    const response = await axios.request(config);
+    const { text } = req.body;
     
-    if (response.data && response.data[0] && response.data[0].summary_text) {
-      return response.data[0].summary_text;
-    } else {
-      throw new Error('Invalid response format from Hugging Face API');
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
     }
-  } catch (error) {
-    if (error.response) {
-      console.error('API Error:', error.response.status, error.response.data);
-      throw new Error(`API request failed: ${error.response.status}`);
-    } else {
-      console.error('Network Error:', error.message);
-      throw new Error('Network error occurred');
-    }
-  }
-}
 
-module.exports = summarizeText;
+    // For now, return a simple summary
+    // In a real implementation, you would integrate with an AI service
+    const summary = `Summary: ${text.substring(0, 100)}...`;
+    
+    res.json({ summary });
+  } catch (error) {
+    console.error('Error summarizing text:', error);
+    res.status(500).json({ error: 'Failed to summarize text' });
+  }
+});
+
+module.exports = router;
