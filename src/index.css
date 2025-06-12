@@ -23,32 +23,12 @@ body {
     @apply backdrop-blur-2xl bg-white/30 dark:bg-black/50 border border-white/40 dark:border-gray-700;
   }
   
-  .gradient-bg {
-    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-    background-size: 400% 400%;
-    animation: gradient 15s ease infinite;
-  }
-  
   .light-gradient-bg {
-    background: linear-gradient(-45deg, #f8fafc, #e2e8f0, #cbd5e1, #94a3b8);
-    background-size: 400% 400%;
-    animation: gradient 15s ease infinite;
+    background: #ffffff;
   }
   
   .dark-gradient-bg {
     background: #000000;
-  }
-}
-
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
   }
 }
 
