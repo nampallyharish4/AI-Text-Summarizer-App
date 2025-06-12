@@ -1,25 +1,24 @@
+const express = require('express');
 const axios = require('axios');
+const router = express.Router();
 
-async function summarizeText(text) {
+router.post('/summarize', async (req, res) => {
   try {
-    // Placeholder function for text summarization
-    // In a real implementation, you would integrate with an AI service like OpenAI, Hugging Face, etc.
+    const { text } = req.body;
     
-    // Simple extractive summarization (first few sentences)
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const summaryLength = Math.min(3, sentences.length);
-    const summary = sentences.slice(0, summaryLength).join('. ') + '.';
-    
-    return {
-      summary,
-      originalLength: text.length,
-      summaryLength: summary.length,
-      compressionRatio: ((text.length - summary.length) / text.length * 100).toFixed(1)
-    };
-  } catch (error) {
-    console.error('Error in summarizeText:', error);
-    throw new Error('Failed to summarize text');
-  }
-}
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
 
-module.exports = { summarizeText };
+    // For now, return a simple summary
+    // In a real implementation, you would integrate with an AI service
+    const summary = `Summary: ${text.substring(0, 100)}...`;
+    
+    res.json({ summary });
+  } catch (error) {
+    console.error('Error summarizing text:', error);
+    res.status(500).json({ error: 'Failed to summarize text' });
+  }
+});
+
+module.exports = router;
