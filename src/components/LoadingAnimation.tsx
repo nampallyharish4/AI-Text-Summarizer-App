@@ -13,7 +13,7 @@ const LoadingAnimation: React.FC = () => {
         <div className="p-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500">
           <Brain className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-xl font-semibold text-white dark:text-white">AI Processing</h3>
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-white">AI Processing</h3>
       </div>
 
       <div className="flex flex-col items-center justify-center min-h-80">
@@ -22,12 +22,12 @@ const LoadingAnimation: React.FC = () => {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-20 h-20 border-4 border-white/20 border-t-blue-500 rounded-full"
+            className="w-20 h-20 border-4 border-gray-300 dark:border-white/20 border-t-blue-500 rounded-full"
           />
           <motion.div
             animate={{ rotate: -360 }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-2 w-16 h-16 border-4 border-white/10 border-b-purple-500 rounded-full"
+            className="absolute inset-2 w-16 h-16 border-4 border-gray-200 dark:border-white/10 border-b-purple-500 rounded-full"
           />
           <motion.div
             animate={{ 
@@ -49,7 +49,7 @@ const LoadingAnimation: React.FC = () => {
             transition={{ duration: 2, repeat: Infinity }}
             className="absolute left-0 top-0"
           >
-            <Sparkles className="w-6 h-6 text-yellow-400" />
+            <Sparkles className="w-6 h-6 text-yellow-500 dark:text-yellow-400" />
           </motion.div>
           <motion.div
             animate={{ 
@@ -59,7 +59,7 @@ const LoadingAnimation: React.FC = () => {
             transition={{ duration: 2.5, repeat: Infinity }}
             className="absolute right-0 top-0"
           >
-            <Zap className="w-6 h-6 text-blue-400" />
+            <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </motion.div>
           <motion.div
             animate={{ 
@@ -69,7 +69,7 @@ const LoadingAnimation: React.FC = () => {
             transition={{ duration: 1.8, repeat: Infinity }}
             className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
           >
-            <Brain className="w-6 h-6 text-purple-400" />
+            <Brain className="w-6 h-6 text-purple-600 dark:text-purple-400" />
           </motion.div>
         </div>
 
@@ -79,10 +79,10 @@ const LoadingAnimation: React.FC = () => {
           transition={{ duration: 1.5, repeat: Infinity }}
           className="text-center"
         >
-          <h4 className="text-xl font-semibold text-white dark:text-white mb-2">
+          <h4 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
             Analyzing Your Text
           </h4>
-          <p className="text-white/80 dark:text-white/70">
+          <p className="text-gray-600 dark:text-white/70">
             Our AI is processing and summarizing your content...
           </p>
         </motion.div>
