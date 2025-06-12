@@ -100,7 +100,7 @@ function App() {
         <motion.header 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-strong sticky top-0 z-50 border-b border-white/20 dark:border-gray-800"
+          className="glass-strong sticky top-0 z-50 border-b-2 border-gray-200 dark:border-gray-700 shadow-xl"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
@@ -108,7 +108,7 @@ function App() {
                 className="flex items-center space-x-3"
                 whileHover={{ scale: 1.05 }}
               >
-                <div className="p-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600">
+                <div className="p-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg border border-blue-300 dark:border-blue-700">
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -120,7 +120,7 @@ function App() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={toggleDarkMode}
-                className="p-3 rounded-full glass hover:glass-strong transition-all duration-300"
+                className="p-3 rounded-full glass hover:glass-strong transition-all duration-300 border border-gray-200 dark:border-gray-600 shadow-lg"
               >
                 <AnimatePresence mode="wait">
                   {darkMode ? (
@@ -245,7 +245,7 @@ function App() {
               whileTap={{ scale: 0.95 }}
               onClick={handleSummarize}
               disabled={isLoading || inputText.length < 200}
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 border border-blue-400 dark:border-blue-600"
             >
               <Sparkles className="w-5 h-5" />
               <span>{isLoading ? 'Summarizing...' : 'Summarize Text'}</span>
@@ -257,7 +257,7 @@ function App() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => copyToClipboard(summary)}
-                  className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/30 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2"
+                  className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/50 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2 border border-gray-200 dark:border-gray-600 shadow-lg"
                 >
                   <Copy className="w-5 h-5" />
                   <span>Copy Summary</span>
@@ -267,7 +267,7 @@ function App() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={downloadSummary}
-                  className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/30 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2"
+                  className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/50 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2 border border-gray-200 dark:border-gray-600 shadow-lg"
                 >
                   <Download className="w-5 h-5" />
                   <span>Download</span>
@@ -279,7 +279,7 @@ function App() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={clearAll}
-              className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/30 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2"
+              className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/50 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2 border border-gray-200 dark:border-gray-600 shadow-lg"
             >
               <RefreshCw className="w-5 h-5" />
               <span>Clear All</span>
@@ -292,7 +292,7 @@ function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
-          className="glass-strong border-t border-white/20 dark:border-gray-800 mt-16"
+          className="glass-strong border-t-2 border-gray-200 dark:border-gray-700 mt-16 shadow-xl"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center">

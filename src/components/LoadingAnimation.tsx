@@ -7,10 +7,10 @@ const LoadingAnimation: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="glass-strong rounded-3xl p-6 h-full"
+      className="glass-strong rounded-3xl p-6 h-full border-2 border-gray-200 dark:border-gray-700 shadow-2xl"
     >
       <div className="flex items-center space-x-3 mb-6">
-        <div className="p-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500">
+        <div className="p-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
           <Brain className="w-5 h-5 text-white" />
         </div>
         <h3 className="text-xl font-semibold text-gray-800 dark:text-white">AI Processing</h3>
@@ -22,12 +22,12 @@ const LoadingAnimation: React.FC = () => {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-20 h-20 border-4 border-gray-300 dark:border-gray-700 border-t-blue-500 rounded-full"
+            className="w-20 h-20 border-4 border-gray-300 dark:border-gray-700 border-t-blue-500 rounded-full shadow-lg"
           />
           <motion.div
             animate={{ rotate: -360 }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-2 w-16 h-16 border-4 border-gray-200 dark:border-gray-800 border-b-purple-500 rounded-full"
+            className="absolute inset-2 w-16 h-16 border-4 border-gray-200 dark:border-gray-800 border-b-purple-500 rounded-full shadow-md"
           />
           <motion.div
             animate={{ 
@@ -35,7 +35,7 @@ const LoadingAnimation: React.FC = () => {
               opacity: [0.5, 1, 0.5]
             }}
             transition={{ duration: 1.5, repeat: Infinity }}
-            className="absolute inset-6 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+            className="absolute inset-6 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full shadow-lg"
           />
         </div>
 
@@ -47,9 +47,9 @@ const LoadingAnimation: React.FC = () => {
               x: [-5, 5, -5]
             }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="absolute left-0 top-0"
+            className="absolute left-0 top-0 p-2 rounded-full bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 shadow-lg"
           >
-            <Sparkles className="w-6 h-6 text-yellow-500 dark:text-yellow-400" />
+            <Sparkles className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
           </motion.div>
           <motion.div
             animate={{ 
@@ -57,7 +57,7 @@ const LoadingAnimation: React.FC = () => {
               x: [5, -5, 5]
             }}
             transition={{ duration: 2.5, repeat: Infinity }}
-            className="absolute right-0 top-0"
+            className="absolute right-0 top-0 p-2 rounded-full bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 shadow-lg"
           >
             <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </motion.div>
@@ -67,7 +67,7 @@ const LoadingAnimation: React.FC = () => {
               x: [0, 0, 0]
             }}
             transition={{ duration: 1.8, repeat: Infinity }}
-            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 p-2 rounded-full bg-purple-100 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700 shadow-lg"
           >
             <Brain className="w-6 h-6 text-purple-600 dark:text-purple-400" />
           </motion.div>
@@ -77,7 +77,7 @@ const LoadingAnimation: React.FC = () => {
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="text-center"
+          className="text-center p-4 bg-white/20 dark:bg-black/20 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg"
         >
           <h4 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
             Analyzing Your Text
@@ -101,7 +101,7 @@ const LoadingAnimation: React.FC = () => {
                 repeat: Infinity,
                 delay: i * 0.2
               }}
-              className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+              className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full shadow-lg border border-gray-300 dark:border-gray-600"
             />
           ))}
         </div>

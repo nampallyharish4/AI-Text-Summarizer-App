@@ -31,10 +31,10 @@ const TextInput: React.FC<TextInputProps> = ({
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="glass-strong rounded-3xl p-6 h-full"
+      className="glass-strong rounded-3xl p-6 h-full border-2 border-gray-200 dark:border-gray-700 shadow-2xl"
     >
       <div className="flex items-center space-x-3 mb-4">
-        <div className="p-2 rounded-xl bg-gradient-to-r from-green-500 to-blue-500">
+        <div className="p-2 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 shadow-lg">
           <FileText className="w-5 h-5 text-white" />
         </div>
         <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Input Text</h3>
@@ -46,12 +46,12 @@ const TextInput: React.FC<TextInputProps> = ({
           onChange={(e) => onChange(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Paste your text here to summarize... (Minimum 200 characters, Maximum 100,000 characters)"
-          className="w-full h-80 p-4 bg-white/20 dark:bg-black/30 border border-white/30 dark:border-gray-700 rounded-2xl text-gray-800 dark:text-white placeholder-gray-600 dark:placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300"
+          className="w-full h-80 p-4 bg-white/50 dark:bg-black/30 border-2 border-gray-200 dark:border-gray-600 rounded-2xl text-gray-800 dark:text-white placeholder-gray-600 dark:placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 dark:focus:border-blue-500 transition-all duration-300 shadow-inner"
           maxLength={100000}
         />
         
         {/* Character counter overlay */}
-        <div className="absolute bottom-4 right-4 glass rounded-lg px-3 py-1">
+        <div className="absolute bottom-4 right-4 glass rounded-lg px-3 py-1 border border-gray-200 dark:border-gray-600 shadow-md">
           <span className={`text-sm font-medium ${
             isValid ? 'text-green-600 dark:text-green-400' : characterCount > 100000 ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'
           }`}>
@@ -76,7 +76,7 @@ const TextInput: React.FC<TextInputProps> = ({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-2 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl mb-4"
+          className="flex items-center space-x-2 p-3 bg-red-50 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-700 rounded-xl mb-4 shadow-lg"
         >
           <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
           <span className="text-red-700 dark:text-red-400 text-sm">{error}</span>
@@ -84,11 +84,11 @@ const TextInput: React.FC<TextInputProps> = ({
       )}
 
       {/* Progress bar */}
-      <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2 mb-4">
+      <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-3 mb-4 border border-gray-300 dark:border-gray-700 shadow-inner">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${Math.min((characterCount / 200) * 100, 100)}%` }}
-          className={`h-2 rounded-full transition-all duration-300 ${
+          className={`h-full rounded-full transition-all duration-300 shadow-sm ${
             characterCount < 200 
               ? 'bg-gradient-to-r from-red-500 to-yellow-500'
               : 'bg-gradient-to-r from-green-500 to-blue-500'
