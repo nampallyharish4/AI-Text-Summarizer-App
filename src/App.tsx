@@ -304,26 +304,7 @@ function App() {
               </p>
             </div>
           </div>
-        </main>
-
-        {/* Footer */}
-        <motion.footer 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="glass-strong border-t border-white/20 mt-16"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center">
-              <p className="text-white/80">
-                Developed with ❤️ by Harish Nampally
-              </p>
-              <p className="text-white/60 text-sm mt-2">
-                Powered by Hugging Face AI • Built with React & Tailwind CSS
-              </p>
-            </div>
-          </div>
-        </footer>
+        </motion.footer>
       </div>
     </div>
   );
