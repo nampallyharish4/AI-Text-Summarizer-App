@@ -13,7 +13,7 @@ const LoadingAnimation: React.FC = () => {
         <div className="p-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500">
           <Brain className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-xl font-semibold text-white">AI Processing</h3>
+        <h3 className="text-xl font-semibold text-white dark:text-white">AI Processing</h3>
       </div>
 
       <div className="flex flex-col items-center justify-center min-h-80">
@@ -79,10 +79,10 @@ const LoadingAnimation: React.FC = () => {
           transition={{ duration: 1.5, repeat: Infinity }}
           className="text-center"
         >
-          <h4 className="text-xl font-semibold text-white mb-2">
+          <h4 className="text-xl font-semibold text-white dark:text-white mb-2">
             Analyzing Your Text
           </h4>
-          <p className="text-white/70">
+          <p className="text-white/80 dark:text-white/70">
             Our AI is processing and summarizing your content...
           </p>
         </motion.div>

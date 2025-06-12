@@ -37,7 +37,7 @@ const TextInput: React.FC<TextInputProps> = ({
         <div className="p-2 rounded-xl bg-gradient-to-r from-green-500 to-blue-500">
           <FileText className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-xl font-semibold text-white">Input Text</h3>
+        <h3 className="text-xl font-semibold text-white dark:text-white">Input Text</h3>
       </div>
 
       <div className="relative mb-4">
@@ -46,7 +46,7 @@ const TextInput: React.FC<TextInputProps> = ({
           onChange={(e) => onChange(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Paste your text here to summarize... (Minimum 200 characters, Maximum 100,000 characters)"
-          className="w-full h-80 p-4 bg-white/10 dark:bg-black/10 border border-white/20 rounded-2xl text-white placeholder-white/50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300"
+          className="w-full h-80 p-4 bg-white/10 dark:bg-black/10 border border-white/20 rounded-2xl text-white dark:text-white placeholder-white/60 dark:placeholder-white/50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300"
           maxLength={100000}
         />
         
@@ -62,11 +62,11 @@ const TextInput: React.FC<TextInputProps> = ({
 
       {/* Stats */}
       <div className="flex justify-between items-center mb-4">
-        <div className="flex space-x-4 text-sm text-white/70">
+        <div className="flex space-x-4 text-sm text-white/80 dark:text-white/70">
           <span>Words: {wordCount.toLocaleString()}</span>
           <span>Characters: {characterCount.toLocaleString()}</span>
         </div>
-        <div className="text-sm text-white/70">
+        <div className="text-sm text-white/80 dark:text-white/70">
           Ctrl + Enter to summarize
         </div>
       </div>
@@ -97,7 +97,7 @@ const TextInput: React.FC<TextInputProps> = ({
       </div>
 
       {/* Validation message */}
-      <div className="text-sm text-white/60">
+      <div className="text-sm text-white/70 dark:text-white/60">
         {characterCount < 200 && (
           <span className="text-yellow-400">
             Need {200 - characterCount} more characters to summarize
