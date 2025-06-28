@@ -64,10 +64,28 @@ function App() {
         }),
       });
 
-      const data = await response.json();
-
+      // Check if response is ok and has content
       if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const responseText = await response.text();
+      if (!responseText) {
+        throw new Error('Empty response from server');
+      }
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error('Invalid JSON response from server');
       }
 
       setSummary(data.summary);
@@ -81,8 +99,8 @@ function App() {
       console.error('Summarization error:', err);
       
       // Handle different types of errors
-      if (err.message.includes('Failed to fetch')) {
-        setError('Unable to connect to the server. Please make sure the backend is running.');
+      if (err.message.includes('Failed to fetch') || err.message.includes('ECONNREFUSED')) {
+        setError('Unable to connect to the server. Please make sure the backend is running on port 3001.');
       } else if (err.message.includes('timeout')) {
         setError('Request timed out. Please try with shorter text or try again later.');
       } else if (err.message.includes('Rate limit')) {
@@ -91,6 +109,8 @@ function App() {
         setError('API configuration error. Please contact the administrator.');
       } else if (err.message.includes('model is loading')) {
         setError('AI model is loading. Please try again in a few moments.');
+      } else if (err.message.includes('Empty response') || err.message.includes('Invalid JSON')) {
+        setError('Server communication error. Please try again.');
       } else {
         setError(err.message || 'Failed to summarize text. Please try again.');
       }
@@ -332,28 +352,25 @@ function App() {
             </motion.button>
           </motion.div>
 
-          {/* API Status Warning */}
-          {error && error.includes('API') && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-700 rounded-2xl shadow-lg"
-            >
-              <div className="flex items-center space-x-3">
-                <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-                <div>
-                  <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200">
-                    Setup Required
-                  </h3>
-                  <p className="text-yellow-700 dark:text-yellow-300 mt-1">
-                    To use the AI summarization feature, you need to configure your Hugging Face API key. 
-                    Create a <code className="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">.env</code> file 
-                    in the server directory with your API key.
-                  </p>
-                </div>
+          {/* Demo Notice */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-2xl shadow-lg"
+          >
+            <div className="flex items-center space-x-3">
+              <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div>
+                <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">
+                  Demo Mode Active
+                </h3>
+                <p className="text-blue-700 dark:text-blue-300 mt-1">
+                  The app is currently using a demo summarization algorithm. For AI-powered summaries, 
+                  add your Hugging Face API key to the <code className="bg-blue-200 dark:bg-blue-800 px-1 rounded">server/.env</code> file.
+                </p>
               </div>
-            </motion.div>
-          )}
+            </div>
+          </motion.div>
         </main>
 
         {/* Footer */}
