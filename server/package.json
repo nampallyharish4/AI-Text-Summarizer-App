@@ -3,14 +3,10 @@
   "version": "1.0.0",
   "description": "Backend server for AI Text Summarizer",
   "main": "index.js",
-  "type": "commonjs",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "keywords": ["ai", "summarizer", "express", "huggingface"],
-  "author": "Harish Nampally",
-  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
@@ -19,5 +15,14 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
-  }
+  },
+  "keywords": [
+    "ai",
+    "text-summarization",
+    "huggingface",
+    "express",
+    "api"
+  ],
+  "author": "Harish Nampally",
+  "license": "MIT"
 }
