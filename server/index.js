@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const summarizeRoute = require('./summarize');
+const { summarizeText } = require('./summarize');
 
 // Load environment variables
 dotenv.config();
@@ -13,9 +13,6 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Routes
-app.use('/api', summarizeRoute);
-
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -25,17 +22,80 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    message: err.message 
+// Summarization endpoint
+app.post('/api/summarize', async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    // Validate input
+    if (!text) {
+      return res.status(400).json({ 
+        error: 'Text is required',
+        message: 'Please provide text to summarize'
+      });
+    }
+
+    if (text.length < 200) {
+      return res.status(400).json({ 
+        error: 'Text too short',
+        message: 'Text must be at least 200 characters long'
+      });
+    }
+
+    if (text.length > 100000) {
+      return res.status(400).json({ 
+        error: 'Text too long',
+        message: 'Text must be less than 100,000 characters'
+      });
+    }
+
+    // Summarize the text
+    const result = await summarizeText(text);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Summarization error:', error);
+    
+    if (error.message.includes('API key')) {
+      return res.status(401).json({
+        error: 'API Configuration Error',
+        message: 'Hugging Face API key is not configured properly'
+      });
+    }
+
+    if (error.message.includes('Model is loading')) {
+      return res.status(503).json({
+        error: 'Model Loading',
+        message: 'The AI model is currently loading. Please try again in a few moments.'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'An error occurred while processing your request'
+    });
+  }
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'The requested endpoint does not exist'
   });
 });
 
-// Start server
+// Error handler
+app.use((error, req, res, next) => {
+  console.error('Unhandled error:', error);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'An unexpected error occurred'
+  });
+});
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 AI Text Summarizer API running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🤖 Summarize endpoint: http://localhost:${PORT}/api/summarize`);
 });

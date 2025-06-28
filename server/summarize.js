@@ -1,22 +1,28 @@
-const express = require('express');
 const axios = require('axios');
-const router = express.Router();
 
 // Hugging Face API configuration
 const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models/facebook/bart-large-cnn';
-const MAX_CHUNK_SIZE = 1024; // Maximum tokens per chunk
-const MIN_TEXT_LENGTH = 200;
-const MAX_TEXT_LENGTH = 100000;
+const API_KEY = process.env.HUGGINGFACE_API_KEY;
 
-// Helper function to split text into chunks
-function splitTextIntoChunks(text, maxChunkSize = MAX_CHUNK_SIZE) {
+if (!API_KEY) {
+  console.error('❌ HUGGINGFACE_API_KEY is not set in environment variables');
+  console.log('📝 Please add your Hugging Face API key to the .env file');
+}
+
+/**
+ * Chunk text into smaller pieces for processing
+ * @param {string} text - The text to chunk
+ * @param {number} maxLength - Maximum length per chunk
+ * @returns {string[]} Array of text chunks
+ */
+function chunkText(text, maxLength = 1000) {
   const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
   const chunks = [];
   let currentChunk = '';
 
   for (const sentence of sentences) {
     const trimmedSentence = sentence.trim();
-    if (currentChunk.length + trimmedSentence.length + 1 <= maxChunkSize) {
+    if (currentChunk.length + trimmedSentence.length + 1 <= maxLength) {
       currentChunk += (currentChunk ? '. ' : '') + trimmedSentence;
     } else {
       if (currentChunk) {
@@ -33,111 +39,83 @@ function splitTextIntoChunks(text, maxChunkSize = MAX_CHUNK_SIZE) {
   return chunks.length > 0 ? chunks : [text];
 }
 
-// Helper function to call Hugging Face API
-async function callHuggingFaceAPI(text, retries = 3) {
-  const apiKey = process.env.HUGGINGFACE_API_KEY;
-  
-  if (!apiKey) {
-    throw new Error('Hugging Face API key not configured');
-  }
-
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const response = await axios.post(
-        HUGGINGFACE_API_URL,
-        { 
-          inputs: text,
-          parameters: {
-            max_length: 150,
-            min_length: 30,
-            do_sample: false
-          }
+/**
+ * Call Hugging Face API to summarize text
+ * @param {string} text - Text to summarize
+ * @returns {Promise<string>} Summarized text
+ */
+async function callHuggingFaceAPI(text) {
+  try {
+    const response = await axios.post(
+      HUGGINGFACE_API_URL,
+      { inputs: text },
+      {
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
         },
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          timeout: 30000, // 30 second timeout
-        }
-      );
+        timeout: 30000, // 30 second timeout
+      }
+    );
 
-      if (response.data && response.data[0] && response.data[0].summary_text) {
-        return response.data[0].summary_text;
-      } else {
-        throw new Error('Invalid response format from Hugging Face API');
-      }
-    } catch (error) {
-      console.error(`Attempt ${attempt} failed:`, error.message);
-      
-      if (error.response?.status === 503 && attempt < retries) {
-        // Model is loading, wait and retry
-        console.log('Model is loading, waiting 10 seconds before retry...');
-        await new Promise(resolve => setTimeout(resolve, 10000));
-        continue;
-      }
-      
-      if (attempt === retries) {
-        if (error.response?.status === 503) {
-          throw new Error('AI model is currently loading. Please try again in a few minutes.');
-        } else if (error.response?.status === 401) {
-          throw new Error('Invalid API key. Please check your Hugging Face API key.');
-        } else if (error.code === 'ECONNABORTED') {
-          throw new Error('Request timeout. The text might be too long or the service is busy.');
-        } else {
-          throw new Error(`AI service error: ${error.message}`);
-        }
-      }
+    if (response.data.error) {
+      throw new Error(response.data.error);
     }
+
+    if (Array.isArray(response.data) && response.data[0]?.summary_text) {
+      return response.data[0].summary_text;
+    }
+
+    throw new Error('Unexpected API response format');
+  } catch (error) {
+    if (error.response?.status === 503) {
+      throw new Error('Model is loading, please try again in a few moments');
+    }
+    
+    if (error.response?.status === 401) {
+      throw new Error('API key is invalid or not configured');
+    }
+
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('Request timeout - the text might be too long');
+    }
+
+    throw new Error(`API request failed: ${error.message}`);
   }
 }
 
-// POST /api/summarize
-router.post('/summarize', async (req, res) => {
+/**
+ * Summarize text using Hugging Face BART model
+ * @param {string} text - Text to summarize
+ * @returns {Promise<Object>} Summarization result
+ */
+async function summarizeText(text) {
+  if (!API_KEY) {
+    throw new Error('API key not configured');
+  }
+
+  const originalLength = text.length;
+  const wordCount = text.split(/\s+/).length;
+
   try {
-    const { text } = req.body;
-
-    // Validation
-    if (!text || typeof text !== 'string') {
-      return res.status(400).json({ 
-        error: 'Text is required and must be a string' 
-      });
-    }
-
-    const trimmedText = text.trim();
-    
-    if (trimmedText.length < MIN_TEXT_LENGTH) {
-      return res.status(400).json({ 
-        error: `Text must be at least ${MIN_TEXT_LENGTH} characters long` 
-      });
-    }
-
-    if (trimmedText.length > MAX_TEXT_LENGTH) {
-      return res.status(400).json({ 
-        error: `Text must be less than ${MAX_TEXT_LENGTH} characters long` 
-      });
-    }
-
-    console.log(`Processing text of ${trimmedText.length} characters...`);
-
     let summary;
 
     // For shorter texts, summarize directly
-    if (trimmedText.length <= MAX_CHUNK_SIZE) {
-      summary = await callHuggingFaceAPI(trimmedText);
+    if (text.length <= 1000) {
+      summary = await callHuggingFaceAPI(text);
     } else {
-      // For longer texts, split into chunks and summarize each
-      const chunks = splitTextIntoChunks(trimmedText);
-      console.log(`Split text into ${chunks.length} chunks`);
-
+      // For longer texts, chunk and summarize
+      const chunks = chunkText(text, 1000);
       const chunkSummaries = [];
-      
+
+      console.log(`📝 Processing ${chunks.length} chunks...`);
+
       for (let i = 0; i < chunks.length; i++) {
-        console.log(`Processing chunk ${i + 1}/${chunks.length}...`);
+        console.log(`🔄 Processing chunk ${i + 1}/${chunks.length}`);
         const chunkSummary = await callHuggingFaceAPI(chunks[i]);
         chunkSummaries.push(chunkSummary);
         
-        // Add a small delay between requests to be respectful to the API
+        // Add delay between requests to avoid rate limiting
         if (i < chunks.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
@@ -146,35 +124,34 @@ router.post('/summarize', async (req, res) => {
       // Combine chunk summaries
       const combinedSummary = chunkSummaries.join(' ');
       
-      // If the combined summary is still long, summarize it again
-      if (combinedSummary.length > MAX_CHUNK_SIZE) {
-        console.log('Final summarization of combined chunks...');
+      // If combined summary is still long, summarize it again
+      if (combinedSummary.length > 1000) {
+        console.log('🔄 Final summarization pass...');
         summary = await callHuggingFaceAPI(combinedSummary);
       } else {
         summary = combinedSummary;
       }
     }
 
-    // Calculate statistics
-    const originalLength = trimmedText.length;
     const summaryLength = summary.length;
+    const summaryWordCount = summary.split(/\s+/).length;
     const compressionRatio = Math.round(((originalLength - summaryLength) / originalLength) * 100);
 
-    console.log(`Summarization complete: ${originalLength} → ${summaryLength} chars (${compressionRatio}% compression)`);
+    console.log(`✅ Summarization complete: ${originalLength} → ${summaryLength} chars (${compressionRatio}% compression)`);
 
-    res.json({
+    return {
       summary: summary.trim(),
       originalLength,
       summaryLength,
-      compressionRatio
-    });
-
+      originalWordCount: wordCount,
+      summaryWordCount,
+      compressionRatio,
+      timestamp: new Date().toISOString()
+    };
   } catch (error) {
-    console.error('Summarization error:', error);
-    res.status(500).json({ 
-      error: error.message || 'Failed to summarize text' 
-    });
+    console.error('❌ Summarization failed:', error.message);
+    throw error;
   }
-});
+}
 
-module.exports = router;
+module.exports = { summarizeText };
