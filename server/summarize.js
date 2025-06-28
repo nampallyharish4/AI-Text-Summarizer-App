@@ -4,9 +4,27 @@ const axios = require('axios');
 const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models/facebook/bart-large-cnn';
 const API_KEY = process.env.HUGGINGFACE_API_KEY;
 
-if (!API_KEY) {
-  console.error('❌ HUGGINGFACE_API_KEY is not set in environment variables');
-  console.log('📝 Please add your Hugging Face API key to the .env file');
+if (!API_KEY || API_KEY === 'your_huggingface_api_key_here') {
+  console.warn('⚠️  HUGGINGFACE_API_KEY is not properly configured');
+  console.log('📝 Using demo mode - replace with actual API key for AI summarization');
+}
+
+/**
+ * Demo summarization function for when API key is not configured
+ * @param {string} text - Text to summarize
+ * @returns {string} Demo summary
+ */
+function createDemoSummary(text) {
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const summaryLength = Math.max(2, Math.min(5, Math.floor(sentences.length / 3)));
+  
+  // Take first few sentences and last sentence for demo
+  const selectedSentences = [
+    ...sentences.slice(0, summaryLength - 1),
+    sentences[sentences.length - 1]
+  ].filter(Boolean);
+  
+  return selectedSentences.join('. ').trim() + '.';
 }
 
 /**
@@ -48,7 +66,14 @@ async function callHuggingFaceAPI(text) {
   try {
     const response = await axios.post(
       HUGGINGFACE_API_URL,
-      { inputs: text },
+      { 
+        inputs: text,
+        parameters: {
+          max_length: 150,
+          min_length: 30,
+          do_sample: false
+        }
+      },
       {
         headers: {
           'Authorization': `Bearer ${API_KEY}`,
@@ -85,51 +110,56 @@ async function callHuggingFaceAPI(text) {
 }
 
 /**
- * Summarize text using Hugging Face BART model
+ * Summarize text using Hugging Face BART model or demo mode
  * @param {string} text - Text to summarize
  * @returns {Promise<Object>} Summarization result
  */
 async function summarizeText(text) {
-  if (!API_KEY) {
-    throw new Error('API key not configured');
-  }
-
   const originalLength = text.length;
   const wordCount = text.split(/\s+/).length;
 
   try {
     let summary;
 
-    // For shorter texts, summarize directly
-    if (text.length <= 1000) {
-      summary = await callHuggingFaceAPI(text);
+    // Check if API key is properly configured
+    if (!API_KEY || API_KEY === 'your_huggingface_api_key_here') {
+      console.log('🔄 Using demo summarization mode');
+      summary = createDemoSummary(text);
     } else {
-      // For longer texts, chunk and summarize
-      const chunks = chunkText(text, 1000);
-      const chunkSummaries = [];
-
-      console.log(`📝 Processing ${chunks.length} chunks...`);
-
-      for (let i = 0; i < chunks.length; i++) {
-        console.log(`🔄 Processing chunk ${i + 1}/${chunks.length}`);
-        const chunkSummary = await callHuggingFaceAPI(chunks[i]);
-        chunkSummaries.push(chunkSummary);
-        
-        // Add delay between requests to avoid rate limiting
-        if (i < chunks.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-
-      // Combine chunk summaries
-      const combinedSummary = chunkSummaries.join(' ');
+      // Use actual AI summarization
+      console.log('🤖 Using AI summarization');
       
-      // If combined summary is still long, summarize it again
-      if (combinedSummary.length > 1000) {
-        console.log('🔄 Final summarization pass...');
-        summary = await callHuggingFaceAPI(combinedSummary);
+      // For shorter texts, summarize directly
+      if (text.length <= 1000) {
+        summary = await callHuggingFaceAPI(text);
       } else {
-        summary = combinedSummary;
+        // For longer texts, chunk and summarize
+        const chunks = chunkText(text, 1000);
+        const chunkSummaries = [];
+
+        console.log(`📝 Processing ${chunks.length} chunks...`);
+
+        for (let i = 0; i < chunks.length; i++) {
+          console.log(`🔄 Processing chunk ${i + 1}/${chunks.length}`);
+          const chunkSummary = await callHuggingFaceAPI(chunks[i]);
+          chunkSummaries.push(chunkSummary);
+          
+          // Add delay between requests to avoid rate limiting
+          if (i < chunks.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+
+        // Combine chunk summaries
+        const combinedSummary = chunkSummaries.join(' ');
+        
+        // If combined summary is still long, summarize it again
+        if (combinedSummary.length > 1000) {
+          console.log('🔄 Final summarization pass...');
+          summary = await callHuggingFaceAPI(combinedSummary);
+        } else {
+          summary = combinedSummary;
+        }
       }
     }
 
@@ -146,10 +176,33 @@ async function summarizeText(text) {
       originalWordCount: wordCount,
       summaryWordCount,
       compressionRatio,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      mode: (!API_KEY || API_KEY === 'your_huggingface_api_key_here') ? 'demo' : 'ai'
     };
   } catch (error) {
     console.error('❌ Summarization failed:', error.message);
+    
+    // Fallback to demo mode if AI fails
+    if (API_KEY && API_KEY !== 'your_huggingface_api_key_here') {
+      console.log('🔄 Falling back to demo mode due to API error');
+      const summary = createDemoSummary(text);
+      const summaryLength = summary.length;
+      const summaryWordCount = summary.split(/\s+/).length;
+      const compressionRatio = Math.round(((originalLength - summaryLength) / originalLength) * 100);
+
+      return {
+        summary: summary.trim(),
+        originalLength,
+        summaryLength,
+        originalWordCount: wordCount,
+        summaryWordCount,
+        compressionRatio,
+        timestamp: new Date().toISOString(),
+        mode: 'demo',
+        fallback: true
+      };
+    }
+    
     throw error;
   }
 }
