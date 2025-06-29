@@ -17,6 +17,7 @@ function App() {
     summaryLength: number;
     compressionRatio: number;
   } | null>(null);
+  const [apiMode, setApiMode] = useState<'demo' | 'ai'>('demo');
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -24,7 +25,23 @@ function App() {
       setDarkMode(true);
       document.documentElement.classList.add('dark');
     }
+
+    // Check API status
+    checkApiStatus();
   }, []);
+
+  const checkApiStatus = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/health');
+      if (response.ok) {
+        const data = await response.json();
+        setApiMode(data.mode);
+      }
+    } catch (error) {
+      console.log('Health check failed, using demo mode');
+      setApiMode('demo');
+    }
+  };
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -54,7 +71,7 @@ function App() {
     setSummaryStats(null);
 
     try {
-      const response = await fetch('/api/summarize', {
+      const response = await fetch('/.netlify/functions/summarize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,12 +112,17 @@ function App() {
         compressionRatio: data.compressionRatio
       });
 
+      // Update API mode based on response
+      if (data.mode) {
+        setApiMode(data.mode);
+      }
+
     } catch (err: any) {
       console.error('Summarization error:', err);
       
       // Handle different types of errors
       if (err.message.includes('Failed to fetch') || err.message.includes('ECONNREFUSED')) {
-        setError('Unable to connect to the server. Please make sure the backend is running on port 3001.');
+        setError('Unable to connect to the server. Please check your internet connection and try again.');
       } else if (err.message.includes('timeout')) {
         setError('Request timed out. Please try with shorter text or try again later.');
       } else if (err.message.includes('Rate limit')) {
@@ -352,7 +374,7 @@ function App() {
             </motion.button>
           </motion.div>
 
-          {/* Demo Notice */}
+          {/* API Status Notice */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -362,11 +384,13 @@ function App() {
               <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               <div>
                 <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">
-                  Demo Mode Active
+                  {apiMode === 'ai' ? 'AI Mode Active' : 'Demo Mode Active'}
                 </h3>
                 <p className="text-blue-700 dark:text-blue-300 mt-1">
-                  The app is currently using a demo summarization algorithm. For AI-powered summaries, 
-                  add your Hugging Face API key to the <code className="bg-blue-200 dark:bg-blue-800 px-1 rounded">server/.env</code> file.
+                  {apiMode === 'ai' 
+                    ? 'Using Hugging Face AI for high-quality text summarization.'
+                    : 'Using demo summarization. To enable AI mode, set your Hugging Face API key in the Netlify environment variables.'
+                  }
                 </p>
               </div>
             </div>
@@ -386,7 +410,7 @@ function App() {
                 Developed with ❤️ by Harish Nampally
               </p>
               <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
-                Powered by Hugging Face AI • Built with React & Tailwind CSS
+                Powered by Hugging Face AI • Built with React & Tailwind CSS • Deployed on Netlify
               </p>
             </div>
           </div>
