@@ -18,7 +18,6 @@ function createDemoSummary(text) {
   const sentenceRegex = /([^.!?\n]+[.!?]+[\s]*)/g;
   const sentences = [];
   let match;
-  let lastIndex = 0;
   
   while ((match = sentenceRegex.exec(normalizedText)) !== null) {
     const sentence = match[0].trim();
@@ -26,7 +25,6 @@ function createDemoSummary(text) {
       // Filter out very short fragments
       sentences.push(sentence);
     }
-    lastIndex = match.index + match[0].length;
   }
 
   // If regex didn't match well, try splitting by periods, exclamation, question marks

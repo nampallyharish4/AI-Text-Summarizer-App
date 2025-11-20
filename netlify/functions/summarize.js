@@ -23,7 +23,6 @@ function createDemoSummary(text) {
   const sentenceRegex = /([^.!?\n]+[.!?]+[\s]*)/g;
   const sentences = [];
   let match;
-  let lastIndex = 0;
   
   while ((match = sentenceRegex.exec(normalizedText)) !== null) {
     const sentence = match[0].trim();
@@ -31,7 +30,6 @@ function createDemoSummary(text) {
       // Filter out very short fragments
       sentences.push(sentence);
     }
-    lastIndex = match.index + match[0].length;
   }
 
   // If regex didn't match well, try splitting by periods, exclamation, question marks
@@ -405,7 +403,7 @@ async function summarizeText(text) {
   }
 }
 
-exports.handler = async (event, context) => {
+exports.handler = async (event, _context) => {
   // Set CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -441,7 +439,7 @@ exports.handler = async (event, context) => {
     let body;
     try {
       body = JSON.parse(event.body);
-    } catch (parseError) {
+    } catch (_parseError) {
       console.log('❌ Invalid JSON in request body');
       return {
         statusCode: 400,

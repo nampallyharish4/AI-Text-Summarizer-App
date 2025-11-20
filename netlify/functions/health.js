@@ -1,4 +1,4 @@
-exports.handler = async (event, context) => {
+exports.handler = async (event, _context) => {
   // Set CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -27,8 +27,6 @@ exports.handler = async (event, context) => {
     };
   }
 
-  const API_KEY = process.env.HUGGINGFACE_API_KEY;
-
   return {
     statusCode: 200,
     headers,
@@ -36,7 +34,7 @@ exports.handler = async (event, context) => {
       status: 'OK',
       message: 'AI Text Summarizer API is running',
       timestamp: new Date().toISOString(),
-      mode: API_KEY && API_KEY !== 'your_huggingface_api_key_here' ? 'ai' : 'demo',
+      mode: process.env.HUGGINGFACE_API_KEY && process.env.HUGGINGFACE_API_KEY !== 'your_huggingface_api_key_here' ? 'ai' : 'demo',
       platform: 'netlify-functions'
     }),
   };
