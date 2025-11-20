@@ -30,9 +30,18 @@ function App() {
     checkApiStatus();
   }, []);
 
+  const getApiUrl = (path: string) => {
+    const isDev = import.meta.env.DEV;
+    if (isDev) {
+      return `http://localhost:3001${path}`;
+    }
+    return `/.netlify/functions${path.replace(/^\/api/, '')}`;
+  };
+
   const checkApiStatus = async () => {
     try {
-      const response = await fetch('/.netlify/functions/health');
+      const url = getApiUrl('/api/health');
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setApiMode(data.mode);
@@ -71,7 +80,8 @@ function App() {
     setSummaryStats(null);
 
     try {
-      const response = await fetch('/.netlify/functions/summarize', {
+      const url = getApiUrl('/api/summarize');
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
