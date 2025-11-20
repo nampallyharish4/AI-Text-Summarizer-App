@@ -326,10 +326,13 @@ async function summarizeText(text) {
         const chunks = chunkText(text, 1000);
         const chunkSummaries = [];
 
-        console.log(`📝 Processing ${chunks.length} chunks...`);
+        const sanitizedChunkCount = String(chunks.length || 0);
+        console.log(`📝 Processing ${sanitizedChunkCount} chunks...`);
 
         for (let i = 0; i < chunks.length; i++) {
-          console.log(`🔄 Processing chunk ${i + 1}/${chunks.length}`);
+          const sanitizedChunkNum = String((i + 1) || 0);
+          const sanitizedTotalChunks = String(chunks.length || 0);
+          console.log(`🔄 Processing chunk ${sanitizedChunkNum}/${sanitizedTotalChunks}`);
           const chunkSummary = await callHuggingFaceAPI(chunks[i]);
           chunkSummaries.push(chunkSummary);
 
@@ -358,8 +361,11 @@ async function summarizeText(text) {
       ((originalLength - summaryLength) / originalLength) * 100
     );
 
+    const sanitizedOriginalLength = String(originalLength || 0);
+    const sanitizedSummaryLength = String(summaryLength || 0);
+    const sanitizedCompressionRatio = String(compressionRatio || 0);
     console.log(
-      `✅ Summarization complete: ${originalLength} → ${summaryLength} chars (${compressionRatio}% compression)`
+      `✅ Summarization complete: ${sanitizedOriginalLength} → ${sanitizedSummaryLength} chars (${sanitizedCompressionRatio}% compression)`
     );
 
     return {
@@ -374,7 +380,8 @@ async function summarizeText(text) {
         !API_KEY || API_KEY === 'your_huggingface_api_key_here' ? 'demo' : 'ai',
     };
   } catch (error) {
-    console.error('❌ Summarization failed:', error.message);
+    const sanitizedErrorMessage = error instanceof Error ? String(error.message || 'Unknown error').substring(0, 200) : 'Unknown error';
+    console.error('❌ Summarization failed:', sanitizedErrorMessage);
 
     // Fallback to demo mode if AI fails
     if (API_KEY && API_KEY !== 'your_huggingface_api_key_here') {
@@ -479,7 +486,8 @@ exports.handler = async (event, _context) => {
     }
 
     if (text.length < 200) {
-      console.log(`❌ Text too short: ${text.length} characters`);
+      const sanitizedLength = String(text.length || 0);
+      console.log(`❌ Text too short: ${sanitizedLength} characters`);
       return {
         statusCode: 400,
         headers,
@@ -491,7 +499,8 @@ exports.handler = async (event, _context) => {
     }
 
     if (text.length > 100000) {
-      console.log(`❌ Text too long: ${text.length} characters`);
+      const sanitizedLength = String(text.length || 0);
+      console.log(`❌ Text too long: ${sanitizedLength} characters`);
       return {
         statusCode: 400,
         headers,
@@ -502,12 +511,14 @@ exports.handler = async (event, _context) => {
       };
     }
 
-    console.log(`🔄 Processing text: ${text.length} characters`);
+    const sanitizedLength = String(text.length || 0);
+    console.log(`🔄 Processing text: ${sanitizedLength} characters`);
 
     // Summarize the text
     const result = await summarizeText(text);
 
-    console.log(`✅ Summarization successful (${result.mode} mode)`);
+    const sanitizedMode = String(result.mode || 'unknown');
+    console.log(`✅ Summarization successful (${sanitizedMode} mode)`);
 
     return {
       statusCode: 200,
@@ -515,7 +526,10 @@ exports.handler = async (event, _context) => {
       body: JSON.stringify(result),
     };
   } catch (error) {
-    console.error('❌ Summarization error:', error);
+    const sanitizedError = error instanceof Error 
+      ? String(error.message || 'Unknown error').substring(0, 200)
+      : String(error || 'Unknown error').substring(0, 200);
+    console.error('❌ Summarization error:', sanitizedError);
 
     // Handle specific error types
     if (error.message.includes('API key')) {
