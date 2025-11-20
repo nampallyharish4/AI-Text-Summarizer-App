@@ -7,7 +7,6 @@ import {
   Copy,
   Download,
   RefreshCw,
-  AlertTriangle,
 } from 'lucide-react';
 import TextInput from './components/TextInput';
 import SummaryOutput from './components/SummaryOutput';
@@ -25,7 +24,6 @@ function App() {
     summaryLength: number;
     compressionRatio: number;
   } | null>(null);
-  const [apiMode, setApiMode] = useState<'demo' | 'ai'>('demo');
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -53,13 +51,9 @@ function App() {
     try {
       const url = getApiUrl('/api/health');
       const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setApiMode(data.mode);
-      }
+      // Health check - mode is tracked on the server side
     } catch (error) {
       console.log('Health check failed, using demo mode');
-      setApiMode('demo');
     }
   };
 
@@ -77,7 +71,6 @@ function App() {
     const sentenceRegex = /([^.!?\n]+[.!?]+[\s]*)/g;
     const sentences: string[] = [];
     let match;
-    let lastIndex = 0;
     
     while ((match = sentenceRegex.exec(normalizedText)) !== null) {
       const sentence = match[0].trim();
@@ -85,7 +78,6 @@ function App() {
         // Filter out very short fragments
         sentences.push(sentence);
       }
-      lastIndex = match.index + match[0].length;
     }
 
     // If regex didn't match well, try splitting by periods, exclamation, question marks
@@ -345,11 +337,6 @@ function App() {
         summaryLength: data.summaryLength,
         compressionRatio: data.compressionRatio,
       });
-
-      // Update API mode based on response
-      if (data.mode) {
-        setApiMode(data.mode);
-      }
     } catch (err: any) {
       console.error('Summarization error:', err);
 
@@ -377,7 +364,6 @@ function App() {
           summaryLength,
           compressionRatio,
         });
-        setApiMode('demo');
         // Don't set error - just use demo mode silently
         return;
       } else if (err.message.includes('timeout')) {
@@ -567,7 +553,6 @@ function App() {
                 value={inputText}
                 onChange={setInputText}
                 onSummarize={handleSummarize}
-                isLoading={isLoading}
                 error={error}
               />
             </motion.div>

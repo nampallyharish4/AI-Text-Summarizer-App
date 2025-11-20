@@ -6,7 +6,6 @@ interface TextInputProps {
   value: string;
   onChange: (value: string) => void;
   onSummarize: () => void;
-  isLoading: boolean;
   error: string;
 }
 
@@ -14,7 +13,6 @@ const TextInput: React.FC<TextInputProps> = ({
   value,
   onChange,
   onSummarize,
-  isLoading,
   error
 }) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
