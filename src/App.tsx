@@ -337,14 +337,15 @@ function App() {
         summaryLength: data.summaryLength,
         compressionRatio: data.compressionRatio,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Summarization error:', err);
 
       // Handle connection errors by falling back to client-side demo mode
+      const errorMessage = err instanceof Error ? err.message : String(err);
       if (
-        err.message.includes('Failed to fetch') ||
-        err.message.includes('ECONNREFUSED') ||
-        err.message.includes('NetworkError')
+        errorMessage.includes('Failed to fetch') ||
+        errorMessage.includes('ECONNREFUSED') ||
+        errorMessage.includes('NetworkError')
       ) {
         console.log(
           'Server unavailable, falling back to client-side demo mode'
@@ -366,25 +367,25 @@ function App() {
         });
         // Don't set error - just use demo mode silently
         return;
-      } else if (err.message.includes('timeout')) {
+      } else if (errorMessage.includes('timeout')) {
         setError(
           'Request timed out. Please try with shorter text or try again later.'
         );
-      } else if (err.message.includes('Rate limit')) {
+      } else if (errorMessage.includes('Rate limit')) {
         setError(
           'Rate limit exceeded. Please wait a few minutes before trying again.'
         );
-      } else if (err.message.includes('API key')) {
+      } else if (errorMessage.includes('API key')) {
         setError('API configuration error. Please contact the administrator.');
-      } else if (err.message.includes('model is loading')) {
+      } else if (errorMessage.includes('model is loading')) {
         setError('AI model is loading. Please try again in a few moments.');
       } else if (
-        err.message.includes('Empty response') ||
-        err.message.includes('Invalid JSON')
+        errorMessage.includes('Empty response') ||
+        errorMessage.includes('Invalid JSON')
       ) {
         setError('Server communication error. Please try again.');
       } else {
-        setError(err.message || 'Failed to summarize text. Please try again.');
+        setError(errorMessage || 'Failed to summarize text. Please try again.');
       }
     } finally {
       setIsLoading(false);
