@@ -1,25 +1,219 @@
 const axios = require('axios');
 
 // Hugging Face API configuration
-const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models/facebook/bart-large-cnn';
+const HUGGINGFACE_API_URL =
+  'https://api-inference.huggingface.co/models/facebook/bart-large-cnn';
 const API_KEY = process.env.HUGGINGFACE_API_KEY;
 
 /**
  * Demo summarization function for when API key is not configured
+ * Uses extractive summarization to preserve key content
  * @param {string} text - Text to summarize
  * @returns {string} Demo summary
  */
 function createDemoSummary(text) {
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-  const summaryLength = Math.max(2, Math.min(5, Math.floor(sentences.length / 3)));
+  // Normalize text - ensure it ends with punctuation
+  const normalizedText = text.trim();
+  if (!normalizedText) {
+    return text;
+  }
+
+  // Split into sentences while preserving punctuation
+  // Improved regex to handle various sentence endings and edge cases
+  const sentenceRegex = /([^.!?\n]+[.!?]+[\s]*)/g;
+  const sentences = [];
+  let match;
+  let lastIndex = 0;
   
-  // Take first few sentences and last sentence for demo
-  const selectedSentences = [
-    ...sentences.slice(0, summaryLength - 1),
-    sentences[sentences.length - 1]
-  ].filter(Boolean);
-  
-  return selectedSentences.join('. ').trim() + '.';
+  while ((match = sentenceRegex.exec(normalizedText)) !== null) {
+    const sentence = match[0].trim();
+    if (sentence.length > 10) {
+      // Filter out very short fragments
+      sentences.push(sentence);
+    }
+    lastIndex = match.index + match[0].length;
+  }
+
+  // If regex didn't match well, try splitting by periods, exclamation, question marks
+  if (sentences.length === 0) {
+    const fallbackSentences = normalizedText
+      .split(/[.!?]+\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 10);
+    sentences.push(...fallbackSentences);
+  }
+
+  // If still no sentences, split by newlines or long spaces
+  if (sentences.length === 0) {
+    const paragraphSplit = normalizedText
+      .split(/\n\s*\n/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 10);
+    if (paragraphSplit.length > 0) {
+      sentences.push(...paragraphSplit);
+    } else {
+      // Last resort: split by double spaces or return first portion
+      const chunks = normalizedText.split(/\s{2,}/).filter((s) => s.trim().length > 10);
+      if (chunks.length > 0) {
+        sentences.push(...chunks);
+      }
+    }
+  }
+
+  // If we still have very few sentences, return a condensed version
+  if (sentences.length <= 2) {
+    // Return first 60% of text as summary
+    const targetLength = Math.floor(normalizedText.length * 0.6);
+    return normalizedText.substring(0, targetLength).trim() + '...';
+  }
+
+  if (sentences.length <= 3) {
+    return sentences.join(' ').trim();
+  }
+
+  // Calculate word frequencies (excluding common stop words)
+  const stopWords = new Set([
+    'the',
+    'a',
+    'an',
+    'and',
+    'or',
+    'but',
+    'in',
+    'on',
+    'at',
+    'to',
+    'for',
+    'of',
+    'with',
+    'by',
+    'is',
+    'are',
+    'was',
+    'were',
+    'be',
+    'been',
+    'have',
+    'has',
+    'had',
+    'do',
+    'does',
+    'did',
+    'will',
+    'would',
+    'could',
+    'should',
+    'may',
+    'might',
+    'this',
+    'that',
+    'these',
+    'those',
+    'i',
+    'you',
+    'he',
+    'she',
+    'it',
+    'we',
+    'they',
+    'what',
+    'which',
+    'who',
+    'when',
+    'where',
+    'why',
+    'how',
+  ]);
+
+  const wordFreq = {};
+  const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+
+  words.forEach((word) => {
+    if (!stopWords.has(word) && word.length > 2) {
+      wordFreq[word] = (wordFreq[word] || 0) + 1;
+    }
+  });
+
+  // Score sentences based on word importance and position
+  const sentenceScores = sentences.map((sentence, index) => {
+    const sentenceWords = sentence.toLowerCase().match(/\b\w+\b/g) || [];
+    let score = 0;
+
+    // Score based on important word frequency
+    sentenceWords.forEach((word) => {
+      if (wordFreq[word]) {
+        score += wordFreq[word];
+      }
+    });
+
+    // Boost score for first sentence (usually contains main topic)
+    if (index === 0) {
+      score *= 1.5;
+    }
+
+    // Boost score for last sentence (often contains conclusion)
+    if (index === sentences.length - 1) {
+      score *= 1.3;
+    }
+
+    // Boost score for sentences with numbers, dates, or proper nouns (capitalized words)
+    if (/\d+/.test(sentence) || /[A-Z][a-z]+/.test(sentence)) {
+      score *= 1.2;
+    }
+
+    // Normalize by sentence length (avoid division by zero)
+    score = sentenceWords.length > 0 ? score / Math.sqrt(sentenceWords.length) : 0;
+
+    return { sentence, score, index };
+  });
+
+  // Sort by score (highest first)
+  sentenceScores.sort((a, b) => b.score - a.score);
+
+  // Calculate target summary length (30-40% of original, but at least 3 sentences)
+  const targetRatio = 0.35;
+  const targetSentences = Math.max(
+    3,
+    Math.min(
+      Math.ceil(sentences.length * targetRatio),
+      Math.floor(sentences.length * 0.6) // Never exceed 60% of original
+    )
+  );
+
+  // Select top sentences, but ensure we include first and last
+  const selectedIndices = new Set();
+
+  // Always include first sentence
+  selectedIndices.add(0);
+
+  // Always include last sentence if different from first
+  if (sentences.length > 1) {
+    selectedIndices.add(sentences.length - 1);
+  }
+
+  // Add top-scoring sentences
+  for (const item of sentenceScores) {
+    if (selectedIndices.size >= targetSentences) break;
+    selectedIndices.add(item.index);
+  }
+
+  // Sort selected indices to maintain original order
+  const sortedIndices = Array.from(selectedIndices).sort((a, b) => a - b);
+
+  // Build summary maintaining original order
+  const summary = sortedIndices
+    .map((idx) => sentences[idx])
+    .filter((s) => s && s.trim().length > 0)
+    .join(' ');
+
+  // Ensure we return a meaningful summary
+  if (!summary || summary.trim().length === 0) {
+    // Fallback: return first portion of text
+    const fallbackLength = Math.min(normalizedText.length, Math.floor(normalizedText.length * 0.4));
+    return normalizedText.substring(0, fallbackLength).trim() + '...';
+  }
+
+  return summary.trim();
 }
 
 /**
@@ -29,7 +223,7 @@ function createDemoSummary(text) {
  * @returns {string[]} Array of text chunks
  */
 function chunkText(text, maxLength = 1000) {
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
   const chunks = [];
   let currentChunk = '';
 
@@ -61,17 +255,19 @@ async function callHuggingFaceAPI(text) {
   try {
     const response = await axios.post(
       HUGGINGFACE_API_URL,
-      { 
+      {
         inputs: text,
         parameters: {
-          max_length: 150,
-          min_length: 30,
-          do_sample: false
-        }
+          max_length: Math.min(250, Math.max(80, Math.floor(text.length / 8))), // Dynamic max length based on input
+          min_length: Math.min(50, Math.floor(text.length / 20)), // Dynamic min length
+          do_sample: false,
+          num_beams: 4, // Better quality with beam search
+          length_penalty: 1.2, // Encourage longer summaries that preserve content
+        },
       },
       {
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          Authorization: `Bearer ${API_KEY}`,
           'Content-Type': 'application/json',
         },
         timeout: 30000, // 30 second timeout
@@ -91,7 +287,7 @@ async function callHuggingFaceAPI(text) {
     if (error.response?.status === 503) {
       throw new Error('Model is loading, please try again in a few moments');
     }
-    
+
     if (error.response?.status === 401) {
       throw new Error('API key is invalid or not configured');
     }
@@ -123,7 +319,7 @@ async function summarizeText(text) {
     } else {
       // Use actual AI summarization
       console.log('🤖 Using AI summarization');
-      
+
       // For shorter texts, summarize directly
       if (text.length <= 1000) {
         summary = await callHuggingFaceAPI(text);
@@ -138,16 +334,16 @@ async function summarizeText(text) {
           console.log(`🔄 Processing chunk ${i + 1}/${chunks.length}`);
           const chunkSummary = await callHuggingFaceAPI(chunks[i]);
           chunkSummaries.push(chunkSummary);
-          
+
           // Add delay between requests to avoid rate limiting
           if (i < chunks.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           }
         }
 
         // Combine chunk summaries
         const combinedSummary = chunkSummaries.join(' ');
-        
+
         // If combined summary is still long, summarize it again
         if (combinedSummary.length > 1000) {
           console.log('🔄 Final summarization pass...');
@@ -160,9 +356,13 @@ async function summarizeText(text) {
 
     const summaryLength = summary.length;
     const summaryWordCount = summary.split(/\s+/).length;
-    const compressionRatio = Math.round(((originalLength - summaryLength) / originalLength) * 100);
+    const compressionRatio = Math.round(
+      ((originalLength - summaryLength) / originalLength) * 100
+    );
 
-    console.log(`✅ Summarization complete: ${originalLength} → ${summaryLength} chars (${compressionRatio}% compression)`);
+    console.log(
+      `✅ Summarization complete: ${originalLength} → ${summaryLength} chars (${compressionRatio}% compression)`
+    );
 
     return {
       summary: summary.trim(),
@@ -172,18 +372,21 @@ async function summarizeText(text) {
       summaryWordCount,
       compressionRatio,
       timestamp: new Date().toISOString(),
-      mode: (!API_KEY || API_KEY === 'your_huggingface_api_key_here') ? 'demo' : 'ai'
+      mode:
+        !API_KEY || API_KEY === 'your_huggingface_api_key_here' ? 'demo' : 'ai',
     };
   } catch (error) {
     console.error('❌ Summarization failed:', error.message);
-    
+
     // Fallback to demo mode if AI fails
     if (API_KEY && API_KEY !== 'your_huggingface_api_key_here') {
       console.log('🔄 Falling back to demo mode due to API error');
       const summary = createDemoSummary(text);
       const summaryLength = summary.length;
       const summaryWordCount = summary.split(/\s+/).length;
-      const compressionRatio = Math.round(((originalLength - summaryLength) / originalLength) * 100);
+      const compressionRatio = Math.round(
+        ((originalLength - summaryLength) / originalLength) * 100
+      );
 
       return {
         summary: summary.trim(),
@@ -194,10 +397,10 @@ async function summarizeText(text) {
         compressionRatio,
         timestamp: new Date().toISOString(),
         mode: 'demo',
-        fallback: true
+        fallback: true,
       };
     }
-    
+
     throw error;
   }
 }
@@ -226,14 +429,14 @@ exports.handler = async (event, context) => {
       headers,
       body: JSON.stringify({
         error: 'Method Not Allowed',
-        message: 'Only POST requests are allowed'
+        message: 'Only POST requests are allowed',
       }),
     };
   }
 
   try {
     console.log('📝 Received summarization request');
-    
+
     // Parse request body
     let body;
     try {
@@ -245,7 +448,7 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({
           error: 'Invalid JSON',
-          message: 'Request body must be valid JSON'
+          message: 'Request body must be valid JSON',
         }),
       };
     }
@@ -260,7 +463,7 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({
           error: 'Text is required',
-          message: 'Please provide text to summarize'
+          message: 'Please provide text to summarize',
         }),
       };
     }
@@ -272,7 +475,7 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({
           error: 'Invalid input',
-          message: 'Text must be a string'
+          message: 'Text must be a string',
         }),
       };
     }
@@ -284,7 +487,7 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({
           error: 'Text too short',
-          message: 'Text must be at least 200 characters long'
+          message: 'Text must be at least 200 characters long',
         }),
       };
     }
@@ -296,7 +499,7 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({
           error: 'Text too long',
-          message: 'Text must be less than 100,000 characters'
+          message: 'Text must be less than 100,000 characters',
         }),
       };
     }
@@ -305,18 +508,17 @@ exports.handler = async (event, context) => {
 
     // Summarize the text
     const result = await summarizeText(text);
-    
+
     console.log(`✅ Summarization successful (${result.mode} mode)`);
-    
+
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify(result),
     };
-
   } catch (error) {
     console.error('❌ Summarization error:', error);
-    
+
     // Handle specific error types
     if (error.message.includes('API key')) {
       return {
@@ -324,7 +526,7 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({
           error: 'API Configuration Error',
-          message: 'Hugging Face API key is not configured properly'
+          message: 'Hugging Face API key is not configured properly',
         }),
       };
     }
@@ -335,7 +537,8 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({
           error: 'Model Loading',
-          message: 'The AI model is currently loading. Please try again in a few moments.'
+          message:
+            'The AI model is currently loading. Please try again in a few moments.',
         }),
       };
     }
@@ -346,7 +549,8 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({
           error: 'Request Timeout',
-          message: 'The request took too long to process. Please try with shorter text.'
+          message:
+            'The request took too long to process. Please try with shorter text.',
         }),
       };
     }
@@ -357,7 +561,8 @@ exports.handler = async (event, context) => {
       headers,
       body: JSON.stringify({
         error: 'Internal Server Error',
-        message: 'An error occurred while processing your request. Please try again.'
+        message:
+          'An error occurred while processing your request. Please try again.',
       }),
     };
   }

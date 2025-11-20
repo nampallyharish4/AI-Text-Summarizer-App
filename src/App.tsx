@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Sparkles, Copy, Download, RefreshCw, AlertTriangle } from 'lucide-react';
+import {
+  Sun,
+  Moon,
+  Sparkles,
+  Copy,
+  Download,
+  RefreshCw,
+  AlertTriangle,
+} from 'lucide-react';
 import TextInput from './components/TextInput';
 import SummaryOutput from './components/SummaryOutput';
 import LoadingAnimation from './components/LoadingAnimation';
@@ -21,7 +29,10 @@ function App() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    if (
+      savedTheme === 'dark' ||
+      (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
       setDarkMode(true);
       document.documentElement.classList.add('dark');
     }
@@ -50,6 +61,217 @@ function App() {
       console.log('Health check failed, using demo mode');
       setApiMode('demo');
     }
+  };
+
+  // Client-side demo summarization function (fallback when server is unavailable)
+  // Uses extractive summarization to preserve key content
+  const createDemoSummary = (text: string) => {
+    // Normalize text - ensure it ends with punctuation
+    const normalizedText = text.trim();
+    if (!normalizedText) {
+      return text;
+    }
+
+    // Split into sentences while preserving punctuation
+    // Improved regex to handle various sentence endings and edge cases
+    const sentenceRegex = /([^.!?\n]+[.!?]+[\s]*)/g;
+    const sentences: string[] = [];
+    let match;
+    let lastIndex = 0;
+    
+    while ((match = sentenceRegex.exec(normalizedText)) !== null) {
+      const sentence = match[0].trim();
+      if (sentence.length > 10) {
+        // Filter out very short fragments
+        sentences.push(sentence);
+      }
+      lastIndex = match.index + match[0].length;
+    }
+
+    // If regex didn't match well, try splitting by periods, exclamation, question marks
+    if (sentences.length === 0) {
+      const fallbackSentences = normalizedText
+        .split(/[.!?]+\s+/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 10);
+      sentences.push(...fallbackSentences);
+    }
+
+    // If still no sentences, split by newlines or long spaces
+    if (sentences.length === 0) {
+      const paragraphSplit = normalizedText
+        .split(/\n\s*\n/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 10);
+      if (paragraphSplit.length > 0) {
+        sentences.push(...paragraphSplit);
+      } else {
+        // Last resort: split by double spaces or return first portion
+        const chunks = normalizedText.split(/\s{2,}/).filter((s) => s.trim().length > 10);
+        if (chunks.length > 0) {
+          sentences.push(...chunks);
+        }
+      }
+    }
+
+    // If we still have very few sentences, return a condensed version
+    if (sentences.length <= 2) {
+      // Return first 60% of text as summary
+      const targetLength = Math.floor(normalizedText.length * 0.6);
+      return normalizedText.substring(0, targetLength).trim() + '...';
+    }
+
+    if (sentences.length <= 3) {
+      return sentences.join(' ').trim();
+    }
+
+    // Calculate word frequencies (excluding common stop words)
+    const stopWords = new Set([
+      'the',
+      'a',
+      'an',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'for',
+      'of',
+      'with',
+      'by',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'this',
+      'that',
+      'these',
+      'those',
+      'i',
+      'you',
+      'he',
+      'she',
+      'it',
+      'we',
+      'they',
+      'what',
+      'which',
+      'who',
+      'when',
+      'where',
+      'why',
+      'how',
+    ]);
+
+    const wordFreq: { [key: string]: number } = {};
+    const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+
+    words.forEach((word) => {
+      if (!stopWords.has(word) && word.length > 2) {
+        wordFreq[word] = (wordFreq[word] || 0) + 1;
+      }
+    });
+
+    // Score sentences based on word importance and position
+    const sentenceScores: Array<{
+      sentence: string;
+      score: number;
+      index: number;
+    }> = sentences.map((sentence, index) => {
+      const sentenceWords = sentence.toLowerCase().match(/\b\w+\b/g) || [];
+      let score = 0;
+
+      // Score based on important word frequency
+      sentenceWords.forEach((word) => {
+        if (wordFreq[word]) {
+          score += wordFreq[word];
+        }
+      });
+
+      // Boost score for first sentence (usually contains main topic)
+      if (index === 0) {
+        score *= 1.5;
+      }
+
+      // Boost score for last sentence (often contains conclusion)
+      if (index === sentences.length - 1) {
+        score *= 1.3;
+      }
+
+      // Boost score for sentences with numbers, dates, or proper nouns (capitalized words)
+      if (/\d+/.test(sentence) || /[A-Z][a-z]+/.test(sentence)) {
+        score *= 1.2;
+      }
+
+      // Normalize by sentence length (avoid division by zero)
+      score = sentenceWords.length > 0 ? score / Math.sqrt(sentenceWords.length) : 0;
+
+      return { sentence, score, index };
+    });
+
+    // Sort by score (highest first)
+    sentenceScores.sort((a, b) => b.score - a.score);
+
+    // Calculate target summary length (30-40% of original, but at least 3 sentences)
+    const targetRatio = 0.35;
+    const targetSentences = Math.max(
+      3,
+      Math.min(
+        Math.ceil(sentences.length * targetRatio),
+        Math.floor(sentences.length * 0.6) // Never exceed 60% of original
+      )
+    );
+
+    // Select top sentences, but ensure we include first and last
+    const selectedIndices = new Set<number>();
+
+    // Always include first sentence
+    selectedIndices.add(0);
+
+    // Always include last sentence if different from first
+    if (sentences.length > 1) {
+      selectedIndices.add(sentences.length - 1);
+    }
+
+    // Add top-scoring sentences
+    for (const item of sentenceScores) {
+      if (selectedIndices.size >= targetSentences) break;
+      selectedIndices.add(item.index);
+    }
+
+    // Sort selected indices to maintain original order
+    const sortedIndices = Array.from(selectedIndices).sort((a, b) => a - b);
+
+    // Build summary maintaining original order
+    const summary = sortedIndices
+      .map((idx) => sentences[idx])
+      .filter((s) => s && s.trim().length > 0)
+      .join(' ');
+
+    // Ensure we return a meaningful summary
+    if (!summary || summary.trim().length === 0) {
+      // Fallback: return first portion of text
+      const fallbackLength = Math.min(normalizedText.length, Math.floor(normalizedText.length * 0.4));
+      return normalizedText.substring(0, fallbackLength).trim() + '...';
+    }
+
+    return summary.trim();
   };
 
   const toggleDarkMode = () => {
@@ -100,7 +322,9 @@ function App() {
         } catch {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(
+          errorData.error || `HTTP error! status: ${response.status}`
+        );
       }
 
       const responseText = await response.text();
@@ -119,29 +343,59 @@ function App() {
       setSummaryStats({
         originalLength: data.originalLength,
         summaryLength: data.summaryLength,
-        compressionRatio: data.compressionRatio
+        compressionRatio: data.compressionRatio,
       });
 
       // Update API mode based on response
       if (data.mode) {
         setApiMode(data.mode);
       }
-
     } catch (err: any) {
       console.error('Summarization error:', err);
-      
-      // Handle different types of errors
-      if (err.message.includes('Failed to fetch') || err.message.includes('ECONNREFUSED')) {
-        setError('Unable to connect to the server. Please check your internet connection and try again.');
+
+      // Handle connection errors by falling back to client-side demo mode
+      if (
+        err.message.includes('Failed to fetch') ||
+        err.message.includes('ECONNREFUSED') ||
+        err.message.includes('NetworkError')
+      ) {
+        console.log(
+          'Server unavailable, falling back to client-side demo mode'
+        );
+
+        // Use client-side demo summarization as fallback
+        const demoSummary = createDemoSummary(inputText);
+        const originalLength = inputText.length;
+        const summaryLength = demoSummary.length;
+        const compressionRatio = Math.round(
+          ((originalLength - summaryLength) / originalLength) * 100
+        );
+
+        setSummary(demoSummary);
+        setSummaryStats({
+          originalLength,
+          summaryLength,
+          compressionRatio,
+        });
+        setApiMode('demo');
+        // Don't set error - just use demo mode silently
+        return;
       } else if (err.message.includes('timeout')) {
-        setError('Request timed out. Please try with shorter text or try again later.');
+        setError(
+          'Request timed out. Please try with shorter text or try again later.'
+        );
       } else if (err.message.includes('Rate limit')) {
-        setError('Rate limit exceeded. Please wait a few minutes before trying again.');
+        setError(
+          'Rate limit exceeded. Please wait a few minutes before trying again.'
+        );
       } else if (err.message.includes('API key')) {
         setError('API configuration error. Please contact the administrator.');
       } else if (err.message.includes('model is loading')) {
         setError('AI model is loading. Please try again in a few moments.');
-      } else if (err.message.includes('Empty response') || err.message.includes('Invalid JSON')) {
+      } else if (
+        err.message.includes('Empty response') ||
+        err.message.includes('Invalid JSON')
+      ) {
         setError('Server communication error. Please try again.');
       } else {
         setError(err.message || 'Failed to summarize text. Please try again.');
@@ -164,15 +418,19 @@ function App() {
     const element = document.createElement('a');
     const timestamp = new Date().toISOString().split('T')[0];
     const filename = `summary-${timestamp}.txt`;
-    
+
     let content = `AI Text Summary\n`;
     content += `Generated on: ${new Date().toLocaleString()}\n`;
-    content += `Original text length: ${summaryStats?.originalLength || inputText.length} characters\n`;
-    content += `Summary length: ${summaryStats?.summaryLength || summary.length} characters\n`;
+    content += `Original text length: ${
+      summaryStats?.originalLength || inputText.length
+    } characters\n`;
+    content += `Summary length: ${
+      summaryStats?.summaryLength || summary.length
+    } characters\n`;
     content += `Compression ratio: ${summaryStats?.compressionRatio || 0}%\n`;
     content += `\n${'='.repeat(50)}\n\n`;
     content += summary;
-    
+
     const file = new Blob([content], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
     element.download = filename;
@@ -189,30 +447,29 @@ function App() {
   };
 
   return (
-    <div className={`min-h-screen transition-all duration-500 ${
-      darkMode ? 'dark-gradient-bg' : 'light-gradient-bg'
-    }`}>
+    <div
+      className={`min-h-screen transition-all duration-500 ${
+        darkMode ? 'dark-gradient-bg' : 'light-gradient-bg'
+      }`}
+    >
       <div className="min-h-screen backdrop-blur-sm">
         {/* Header */}
-        <motion.header 
+        <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="glass-strong sticky top-0 z-50 border-b-2 border-gray-200 dark:border-gray-700 shadow-xl"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
-              <motion.div 
-                className="flex items-center space-x-3"
+              <motion.div
+                className="flex items-center"
                 whileHover={{ scale: 1.05 }}
               >
-                <div className="p-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg border border-blue-300 dark:border-blue-700">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
                   AI Text Summarizer
                 </h1>
               </motion.div>
-              
+
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -250,7 +507,7 @@ function App() {
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Hero Section */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -263,13 +520,13 @@ function App() {
               </span>
             </h2>
             <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Leverage the power of AI to quickly summarize articles, research papers, 
-              and any lengthy text content with precision and clarity.
+              Leverage the power of AI to quickly summarize articles, research
+              papers, and any lengthy text content with precision and clarity.
             </p>
           </motion.div>
 
           {/* Stats Cards */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -283,7 +540,10 @@ function App() {
             />
             <StatsCard
               title="Word Count"
-              value={inputText.split(/\s+/).filter(word => word.length > 0).length.toLocaleString()}
+              value={inputText
+                .split(/\s+/)
+                .filter((word) => word.length > 0)
+                .length.toLocaleString()}
               subtitle="words to summarize"
               icon="📊"
             />
@@ -296,11 +556,11 @@ function App() {
           </motion.div>
 
           {/* Input and Output Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="flex flex-col gap-8 mb-8">
             {/* Input Section */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
               <TextInput
@@ -314,8 +574,8 @@ function App() {
 
             {/* Output Section */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
             >
               {isLoading ? (
@@ -332,7 +592,7 @@ function App() {
           </div>
 
           {/* Action Buttons */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
@@ -383,32 +643,10 @@ function App() {
               <span>Clear All</span>
             </motion.button>
           </motion.div>
-
-          {/* API Status Notice */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-2xl shadow-lg"
-          >
-            <div className="flex items-center space-x-3">
-              <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              <div>
-                <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">
-                  {apiMode === 'ai' ? 'AI Mode Active' : 'Demo Mode Active'}
-                </h3>
-                <p className="text-blue-700 dark:text-blue-300 mt-1">
-                  {apiMode === 'ai' 
-                    ? 'Using Hugging Face AI for high-quality text summarization.'
-                    : 'Using demo summarization. To enable AI mode, set your Hugging Face API key in the Netlify environment variables.'
-                  }
-                </p>
-              </div>
-            </div>
-          </motion.div>
         </main>
 
         {/* Footer */}
-        <motion.footer 
+        <motion.footer
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
@@ -420,7 +658,8 @@ function App() {
                 Developed with ❤️ by Harish Nampally
               </p>
               <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
-                Powered by Hugging Face AI • Built with React & Tailwind CSS • Deployed on Netlify
+                Powered by Hugging Face AI • Built with React & Tailwind CSS •
+                Deployed on Netlify
               </p>
             </div>
           </div>
