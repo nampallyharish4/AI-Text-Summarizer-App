@@ -52,7 +52,7 @@ function App() {
       const url = getApiUrl('/api/health');
       await fetch(url);
       // Health check - mode is tracked on the server side
-    } catch (error) {
+    } catch (_error) {
       console.log('Health check failed, using demo mode');
     }
   };
