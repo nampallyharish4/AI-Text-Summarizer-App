@@ -13,11 +13,14 @@ app.use(express.json());
 
 // Routes
 app.get('/api/health', (req, res) => {
-  const hasApiKey = process.env.HUGGINGFACE_API_KEY && process.env.HUGGINGFACE_API_KEY !== 'your_huggingface_api_key_here';
   res.json({
     status: 'OK',
     message: 'Server is running',
-    mode: hasApiKey ? 'ai' : 'demo'
+    mode:
+      process.env.HUGGINGFACE_API_KEY &&
+      process.env.HUGGINGFACE_API_KEY !== 'your_huggingface_api_key_here'
+        ? 'ai'
+        : 'demo',
   });
 });
 
