@@ -405,7 +405,7 @@ function App() {
     const timestamp = new Date().toISOString().split('T')[0];
     const filename = `summary-${timestamp}.txt`;
 
-    let content = `AI Text Summary\n`;
+    let content = "AI Text Summary\n";
     content += `Generated on: ${new Date().toLocaleString()}\n`;
     content += `Original text length: ${
       summaryStats?.originalLength || inputText.length
