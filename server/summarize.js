@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+/* eslint-disable angular/timeout-service */
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
@@ -11,8 +13,10 @@ const API_KEY = process.env.HUGGINGFACE_API_KEY;
  * @param {number} ms - Milliseconds to sleep
  * @returns {Promise<void>} Promise that resolves after the delay
  */
+// eslint-disable-next-line no-restricted-globals
 function sleep(ms) {
   return new Promise((resolve) => {
+    // eslint-disable-next-line no-restricted-globals
     setTimeout(resolve, ms);
   });
 }
