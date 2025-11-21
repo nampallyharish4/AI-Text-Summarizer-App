@@ -1,0 +1,8 @@
+# Generated files
+**/*.timestamp-*.mjs
+**/vite.config.ts.timestamp-*.mjs
+*.mjs
+dist/
+node_modules/
+build/
+
