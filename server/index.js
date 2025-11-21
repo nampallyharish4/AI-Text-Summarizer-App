@@ -1,11 +1,10 @@
 require('dotenv').config();
 
 const express = require('express');
-const cors = require('cors');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(require('cors')());
 app.use(express.json());
 
 // Routes
@@ -22,12 +21,14 @@ app.get('/api/health', (req, res) => {
 });
 
 // Import and use summarize routes
-let summarizeRoutes;
+let summarizeRoutes = null;
 try {
   summarizeRoutes = require('./summarize');
   app.use('/api', summarizeRoutes);
 } catch (error) {
-  console.warn('Summarize routes not found or failed to load. Continuing without them.');
+  console.warn(
+    'Summarize routes not found or failed to load. Continuing without them.'
+  );
 }
 
 // Start server
