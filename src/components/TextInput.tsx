@@ -9,6 +9,11 @@ interface TextInputProps {
   error: string;
 }
 
+/**
+ * TextInput component for entering text to summarize
+ * @param {TextInputProps} props - Component props
+ * @returns {JSX.Element} The text input component
+ */
 const TextInput: React.FC<TextInputProps> = ({
   value,
   onChange,

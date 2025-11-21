@@ -13,6 +13,11 @@ interface SummaryOutputProps {
   } | null;
 }
 
+/**
+ * SummaryOutput component for displaying the summarized text
+ * @param {SummaryOutputProps} props - Component props
+ * @returns {JSX.Element} The summary output component
+ */
 const SummaryOutput: React.FC<SummaryOutputProps> = ({
   summary,
   onCopy,

@@ -6,9 +6,18 @@ import SummaryOutput from './components/SummaryOutput';
 import LoadingAnimation from './components/LoadingAnimation';
 import StatsCard from './components/StatsCard';
 
-// Utility function to safely access window object
-const getWindow = () => (typeof window !== 'undefined' ? window : null);
+/**
+ * Utility function to safely access window object
+ * @returns {Window | null} The window object if available, null otherwise
+ */
+const getWindow = (): Window | null =>
+  typeof window !== 'undefined' ? window : null;
 
+/**
+ * Main App component for AI Text Summarizer
+ * Handles text input, summarization, and display of results
+ * @returns {JSX.Element} The main application component
+ */
 function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -55,9 +64,13 @@ function App() {
     checkApiStatus();
   }, [checkApiStatus]);
 
-  // Client-side demo summarization function (fallback when server is unavailable)
-  // Uses extractive summarization to preserve key content
-  const createDemoSummary = (text: string) => {
+  /**
+   * Client-side demo summarization function (fallback when server is unavailable)
+   * Uses extractive summarization to preserve key content
+   * @param {string} text - The text to summarize
+   * @returns {string} The summarized text
+   */
+  const createDemoSummary = (text: string): string => {
     // Normalize text - ensure it ends with punctuation
     const normalizedText = text.trim();
     if (!normalizedText) {
@@ -68,7 +81,7 @@ function App() {
     // Improved regex to handle various sentence endings and edge cases
     const sentenceRegex = /([^.!?\n]+[.!?]+[\s]*)/g;
     const sentences: string[] = [];
-    let match;
+    let match: RegExpExecArray | null = null;
 
     while ((match = sentenceRegex.exec(normalizedText)) !== null) {
       const sentence = match[0].trim();
@@ -110,7 +123,7 @@ function App() {
     if (sentences.length <= 2) {
       // Return first 60% of text as summary
       const targetLength = Math.floor(normalizedText.length * 0.6);
-      return normalizedText.substring(0, targetLength).trim() + '...';
+      return `${normalizedText.substring(0, targetLength).trim()}...`;
     }
 
     if (sentences.length <= 3) {
@@ -264,7 +277,7 @@ function App() {
         normalizedText.length,
         Math.floor(normalizedText.length * 0.4)
       );
-      return normalizedText.substring(0, fallbackLength).trim() + '...';
+      return `${normalizedText.substring(0, fallbackLength).trim()}...`;
     }
 
     return summary.trim();
@@ -417,17 +430,17 @@ function App() {
     const timestamp = new Date().toISOString().split('T')[0];
     const filename = `summary-${timestamp}.txt`;
 
-    let content = 'AI Text Summary\n';
-    content += `Generated on: ${new Date().toLocaleString()}\n`;
-    content += `Original text length: ${
+    const content = `AI Text Summary
+Generated on: ${new Date().toLocaleString()}
+Original text length: ${
       summaryStats?.originalLength || inputText.length
-    } characters\n`;
-    content += `Summary length: ${
-      summaryStats?.summaryLength || summary.length
-    } characters\n`;
-    content += `Compression ratio: ${summaryStats?.compressionRatio || 0}%\n`;
-    content += `\n${'='.repeat(50)}\n\n`;
-    content += summary;
+    } characters
+Summary length: ${summaryStats?.summaryLength || summary.length} characters
+Compression ratio: ${summaryStats?.compressionRatio || 0}%
+
+${'='.repeat(50)}
+
+${summary}`;
 
     const file = new Blob([content], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);

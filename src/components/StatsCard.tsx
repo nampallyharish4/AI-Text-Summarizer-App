@@ -8,6 +8,11 @@ interface StatsCardProps {
   icon: string;
 }
 
+/**
+ * StatsCard component for displaying statistics
+ * @param {StatsCardProps} props - Component props
+ * @returns {JSX.Element} The stats card component
+ */
 const StatsCard: React.FC<StatsCardProps> = ({ title, value, subtitle, icon }) => {
   return (
     <motion.div
