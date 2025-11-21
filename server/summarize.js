@@ -17,7 +17,7 @@ function createDemoSummary(text) {
   // Improved regex to handle various sentence endings and edge cases
   const sentenceRegex = /([^.!?\n]+[.!?]+[\s]*)/g;
   const sentences = [];
-  let match;
+  let match = null;
   
   while ((match = sentenceRegex.exec(normalizedText)) !== null) {
     const sentence = match[0].trim();

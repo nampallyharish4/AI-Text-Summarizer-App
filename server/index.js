@@ -24,7 +24,9 @@ app.get('/api/health', (req, res) => {
 let summarizeRoutes = null;
 try {
   summarizeRoutes = require('./summarize');
-  app.use('/api', summarizeRoutes);
+  if (summarizeRoutes) {
+    app.use('/api', summarizeRoutes);
+  }
 } catch (error) {
   console.warn(
     'Summarize routes not found or failed to load. Continuing without them.'

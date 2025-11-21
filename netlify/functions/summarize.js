@@ -22,7 +22,7 @@ function createDemoSummary(text) {
   // Improved regex to handle various sentence endings and edge cases
   const sentenceRegex = /([^.!?\n]+[.!?]+[\s]*)/g;
   const sentences = [];
-  let match;
+  let match = null;
   
   while ((match = sentenceRegex.exec(normalizedText)) !== null) {
     const sentence = match[0].trim();
@@ -308,7 +308,7 @@ async function summarizeText(text) {
   const wordCount = text.split(/\s+/).length;
 
   try {
-    let summary;
+    let summary = null;
 
     // Check if API key is properly configured
     if (!API_KEY || API_KEY === 'your_huggingface_api_key_here') {
@@ -443,7 +443,7 @@ exports.handler = async (event, _context) => {
     console.log('📝 Received summarization request');
 
     // Parse request body
-    let body;
+    let body = null;
     try {
       body = JSON.parse(event.body);
     } catch (_parseError) {
