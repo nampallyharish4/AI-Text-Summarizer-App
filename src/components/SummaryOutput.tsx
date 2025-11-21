@@ -90,7 +90,7 @@ const SummaryOutput: React.FC<SummaryOutputProps> = ({
               Your AI-generated summary will appear here
             </p>
             <p className="text-gray-500 dark:text-gray-400 text-sm text-center mt-2">
-              {`Enter at least 200 characters and click "Summarize Text"`}
+              Enter at least 200 characters and click &quot;Summarize Text&quot;
             </p>
           </div>
         )}
