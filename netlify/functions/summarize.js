@@ -6,6 +6,17 @@ const HUGGINGFACE_API_URL =
 const API_KEY = process.env.HUGGINGFACE_API_KEY;
 
 /**
+ * Sleep helper function for async delays
+ * @param {number} ms - Milliseconds to sleep
+ * @returns {Promise<void>} Promise that resolves after the delay
+ */
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+/**
  * Demo summarization function for when API key is not configured
  * Uses extractive summarization to preserve key content
  * @param {string} text - Text to summarize
@@ -338,7 +349,7 @@ async function summarizeText(text) {
 
           // Add delay between requests to avoid rate limiting
           if (i < chunks.length - 1) {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await sleep(1000);
           }
         }
 

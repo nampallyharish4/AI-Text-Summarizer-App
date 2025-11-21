@@ -6,6 +6,17 @@ const HUGGINGFACE_API_URL =
   'https://api-inference.huggingface.co/models/facebook/bart-large-cnn';
 const API_KEY = process.env.HUGGINGFACE_API_KEY;
 
+/**
+ * Sleep helper function for async delays
+ * @param {number} ms - Milliseconds to sleep
+ * @returns {Promise<void>} Promise that resolves after the delay
+ */
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function createDemoSummary(text) {
   // Normalize text - ensure it ends with punctuation
   const normalizedText = text.trim();
@@ -312,7 +323,7 @@ async function summarizeText(text) {
           chunkSummaries.push(chunkSummary);
 
           if (i < chunks.length - 1) {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await sleep(1000);
           }
         }
 

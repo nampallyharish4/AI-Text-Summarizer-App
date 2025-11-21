@@ -13,20 +13,26 @@ const TextInput: React.FC<TextInputProps> = ({
   value,
   onChange,
   onSummarize,
-  error
+  error,
 }) => {
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.ctrlKey && value.length >= 200) {
-      onSummarize();
-    }
-  };
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      onChange(e.target.value);
+    },
+    [onChange]
+  );
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onChange(e.target.value);
-  }, [onChange]);
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && e.ctrlKey && value.length >= 200) {
+        onSummarize();
+      }
+    },
+    [value.length, onSummarize]
+  );
 
   const characterCount = value.length;
-  const wordCount = value.split(/\s+/).filter(word => word.length > 0).length;
+  const wordCount = value.split(/\s+/).filter((word) => word.length > 0).length;
   const isValid = characterCount >= 200 && characterCount <= 100000;
 
   return (
@@ -39,7 +45,9 @@ const TextInput: React.FC<TextInputProps> = ({
         <div className="p-2 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 shadow-lg">
           <FileText className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Input Text</h3>
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
+          Input Text
+        </h3>
       </div>
 
       <div className="relative mb-4">
@@ -51,12 +59,18 @@ const TextInput: React.FC<TextInputProps> = ({
           className="w-full h-80 p-4 bg-white/50 dark:bg-black/30 border-2 border-gray-200 dark:border-gray-600 rounded-2xl text-gray-800 dark:text-white placeholder-gray-600 dark:placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 dark:focus:border-blue-500 transition-all duration-300 shadow-inner"
           maxLength={100000}
         />
-        
+
         {/* Character counter overlay */}
         <div className="absolute bottom-4 right-4 glass rounded-lg px-3 py-1 border border-gray-200 dark:border-gray-600 shadow-md">
-          <span className={`text-sm font-medium ${
-            isValid ? 'text-green-600 dark:text-green-400' : characterCount > 100000 ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'
-          }`}>
+          <span
+            className={`text-sm font-medium ${
+              isValid
+                ? 'text-green-600 dark:text-green-400'
+                : characterCount > 100000
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-yellow-600 dark:text-yellow-400'
+            }`}
+          >
             {characterCount.toLocaleString()} / 100,000
           </span>
         </div>
@@ -81,7 +95,9 @@ const TextInput: React.FC<TextInputProps> = ({
           className="flex items-center space-x-2 p-3 bg-red-50 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-700 rounded-xl mb-4 shadow-lg"
         >
           <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-          <span className="text-red-700 dark:text-red-400 text-sm">{error}</span>
+          <span className="text-red-700 dark:text-red-400 text-sm">
+            {error}
+          </span>
         </motion.div>
       )}
 
@@ -91,7 +107,7 @@ const TextInput: React.FC<TextInputProps> = ({
           initial={{ width: 0 }}
           animate={{ width: `${Math.min((characterCount / 200) * 100, 100)}%` }}
           className={`h-full rounded-full transition-all duration-300 shadow-sm ${
-            characterCount < 200 
+            characterCount < 200
               ? 'bg-gradient-to-r from-red-500 to-yellow-500'
               : 'bg-gradient-to-r from-green-500 to-blue-500'
           }`}
@@ -112,7 +128,8 @@ const TextInput: React.FC<TextInputProps> = ({
         )}
         {characterCount > 100000 && (
           <span className="text-red-600 dark:text-red-400">
-            Text too long. Please reduce by {characterCount - 100000} characters.
+            Text too long. Please reduce by {characterCount - 100000}{' '}
+            characters.
           </span>
         )}
       </div>
