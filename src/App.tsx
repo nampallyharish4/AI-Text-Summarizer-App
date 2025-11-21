@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sun,
@@ -401,6 +401,10 @@ function App() {
     }
   };
 
+  const handleCopySummary = useCallback(() => {
+    copyToClipboard(summary);
+  }, [summary]);
+
   const downloadSummary = () => {
     const element = document.createElement('a');
     const timestamp = new Date().toISOString().split('T')[0];
@@ -569,7 +573,7 @@ function App() {
               ) : (
                 <SummaryOutput
                   summary={summary}
-                  onCopy={() => copyToClipboard(summary)}
+                  onCopy={handleCopySummary}
                   onDownload={downloadSummary}
                   stats={summaryStats}
                 />
@@ -600,7 +604,7 @@ function App() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => copyToClipboard(summary)}
+                  onClick={handleCopySummary}
                   className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/50 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2 border border-gray-200 dark:border-gray-600 shadow-lg"
                 >
                   <Copy className="w-5 h-5" />

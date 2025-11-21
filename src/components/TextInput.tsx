@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, AlertCircle } from 'lucide-react';
 
@@ -21,6 +21,10 @@ const TextInput: React.FC<TextInputProps> = ({
     }
   };
 
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value);
+  }, [onChange]);
+
   const characterCount = value.length;
   const wordCount = value.split(/\s+/).filter(word => word.length > 0).length;
   const isValid = characterCount >= 200 && characterCount <= 100000;
@@ -41,7 +45,7 @@ const TextInput: React.FC<TextInputProps> = ({
       <div className="relative mb-4">
         <textarea
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleChange}
           onKeyPress={handleKeyPress}
           placeholder="Paste your text here to summarize... (Minimum 200 characters, Maximum 100,000 characters)"
           className="w-full h-80 p-4 bg-white/50 dark:bg-black/30 border-2 border-gray-200 dark:border-gray-600 rounded-2xl text-gray-800 dark:text-white placeholder-gray-600 dark:placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 dark:focus:border-blue-500 transition-all duration-300 shadow-inner"
