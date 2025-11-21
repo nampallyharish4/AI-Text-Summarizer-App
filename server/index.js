@@ -1,10 +1,7 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-
-// Load environment variables
-dotenv.config();
-
 const app = express();
 
 // Middleware
@@ -25,14 +22,16 @@ app.get('/api/health', (req, res) => {
 });
 
 // Import and use summarize routes
+let summarizeRoutes;
 try {
-  const summarizeRoutes = require('./summarize');
+  summarizeRoutes = require('./summarize');
   app.use('/api', summarizeRoutes);
-} catch (_error) {
-  console.log('Summarize routes not found, continuing without them');
+} catch (error) {
+  console.warn('Summarize routes not found or failed to load. Continuing without them.');
 }
 
 // Start server
-app.listen(process.env.PORT || 3001, () => {
-  console.log(`Server is running on port ${process.env.PORT || 3001}`);
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
