@@ -6,6 +6,9 @@ import SummaryOutput from './components/SummaryOutput';
 import LoadingAnimation from './components/LoadingAnimation';
 import StatsCard from './components/StatsCard';
 
+// Utility function to safely access window object
+const getWindow = () => (typeof window !== 'undefined' ? window : null);
+
 function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -38,10 +41,10 @@ function App() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
-    const prefersDark =
-      typeof window !== 'undefined'
-        ? window.matchMedia('(prefers-color-scheme: dark)').matches
-        : false;
+    const windowObj = getWindow();
+    const prefersDark = windowObj
+      ? windowObj.matchMedia('(prefers-color-scheme: dark)').matches
+      : false;
 
     if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
       setDarkMode(true);
