@@ -1,11 +1,13 @@
-# Generated files
+# Generated files - these are transpiled and should not be linted
 **/*.timestamp-*.mjs
 **/vite.config.ts.timestamp-*.mjs
 vite.config.ts.timestamp-*.mjs
 *.timestamp-*.mjs
+**/*.mjs
 *.mjs
 dist/
 node_modules/
 build/
 .vite/
+.cache/
 

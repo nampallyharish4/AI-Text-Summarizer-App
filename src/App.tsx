@@ -1,13 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Sun,
-  Moon,
-  Sparkles,
-  Copy,
-  Download,
-  RefreshCw,
-} from 'lucide-react';
+import { Sun, Moon, Sparkles, Copy, Download, RefreshCw } from 'lucide-react';
 import TextInput from './components/TextInput';
 import SummaryOutput from './components/SummaryOutput';
 import LoadingAnimation from './components/LoadingAnimation';
@@ -25,29 +18,15 @@ function App() {
     compressionRatio: number;
   } | null>(null);
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (
-      savedTheme === 'dark' ||
-      (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
-      setDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
-
-    // Check API status
-    checkApiStatus();
-  }, []);
-
-  const getApiUrl = (path: string) => {
+  const getApiUrl = useCallback((path: string) => {
     const isDev = import.meta.env.DEV;
     if (isDev) {
       return `http://localhost:3001${path}`;
     }
     return `/.netlify/functions${path.replace(/^\/api/, '')}`;
-  };
+  }, []);
 
-  const checkApiStatus = async () => {
+  const checkApiStatus = useCallback(async () => {
     try {
       const url = getApiUrl('/api/health');
       await fetch(url);
@@ -55,7 +34,23 @@ function App() {
     } catch (_error) {
       console.log('Health check failed, using demo mode');
     }
-  };
+  }, [getApiUrl]);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark =
+      typeof window !== 'undefined'
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+        : false;
+
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      setDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+
+    // Check API status
+    checkApiStatus();
+  }, [checkApiStatus]);
 
   // Client-side demo summarization function (fallback when server is unavailable)
   // Uses extractive summarization to preserve key content
@@ -71,7 +66,7 @@ function App() {
     const sentenceRegex = /([^.!?\n]+[.!?]+[\s]*)/g;
     const sentences: string[] = [];
     let match;
-    
+
     while ((match = sentenceRegex.exec(normalizedText)) !== null) {
       const sentence = match[0].trim();
       if (sentence.length > 10) {
@@ -99,7 +94,9 @@ function App() {
         sentences.push(...paragraphSplit);
       } else {
         // Last resort: split by double spaces or return first portion
-        const chunks = normalizedText.split(/\s{2,}/).filter((s) => s.trim().length > 10);
+        const chunks = normalizedText
+          .split(/\s{2,}/)
+          .filter((s) => s.trim().length > 10);
         if (chunks.length > 0) {
           sentences.push(...chunks);
         }
@@ -212,7 +209,8 @@ function App() {
       }
 
       // Normalize by sentence length (avoid division by zero)
-      score = sentenceWords.length > 0 ? score / Math.sqrt(sentenceWords.length) : 0;
+      score =
+        sentenceWords.length > 0 ? score / Math.sqrt(sentenceWords.length) : 0;
 
       return { sentence, score, index };
     });
@@ -259,25 +257,31 @@ function App() {
     // Ensure we return a meaningful summary
     if (!summary || summary.trim().length === 0) {
       // Fallback: return first portion of text
-      const fallbackLength = Math.min(normalizedText.length, Math.floor(normalizedText.length * 0.4));
+      const fallbackLength = Math.min(
+        normalizedText.length,
+        Math.floor(normalizedText.length * 0.4)
+      );
       return normalizedText.substring(0, fallbackLength).trim() + '...';
     }
 
     return summary.trim();
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    if (!darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  };
+  const toggleDarkMode = useCallback(() => {
+    setDarkMode((prev) => {
+      const newMode = !prev;
+      if (newMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+      return newMode;
+    });
+  }, []);
 
-  const handleSummarize = async () => {
+  const handleSummarize = useCallback(async () => {
     if (inputText.length < 200) {
       setError('Text must be at least 200 characters long');
       return;
@@ -390,7 +394,7 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [inputText, summaryStats]);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -405,12 +409,12 @@ function App() {
     copyToClipboard(summary);
   }, [summary]);
 
-  const downloadSummary = () => {
+  const downloadSummary = useCallback(() => {
     const element = document.createElement('a');
     const timestamp = new Date().toISOString().split('T')[0];
     const filename = `summary-${timestamp}.txt`;
 
-    let content = "AI Text Summary\n";
+    let content = 'AI Text Summary\n';
     content += `Generated on: ${new Date().toLocaleString()}\n`;
     content += `Original text length: ${
       summaryStats?.originalLength || inputText.length
@@ -428,14 +432,14 @@ function App() {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-  };
+  }, [summary, summaryStats, inputText]);
 
-  const clearAll = () => {
+  const clearAll = useCallback(() => {
     setInputText('');
     setSummary('');
     setError('');
     setSummaryStats(null);
-  };
+  }, []);
 
   return (
     <div
