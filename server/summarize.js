@@ -224,6 +224,12 @@ function createDemoSummary(text) {
   return summary.trim();
 }
 
+/**
+ * Chunks text into smaller pieces for processing
+ * @param {string} text - The text to chunk into smaller pieces
+ * @param {number} [maxLength=1000] - Maximum length per chunk in characters
+ * @returns {string[]} Array of text chunks, each not exceeding maxLength
+ */
 function chunkText(text, maxLength = 1000) {
   const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
   const chunks = [];
@@ -248,6 +254,12 @@ function chunkText(text, maxLength = 1000) {
   return chunks.length > 0 ? chunks : [text];
 }
 
+/**
+ * Calls the Hugging Face API to summarize text using BART model
+ * @param {string} text - The text to summarize
+ * @returns {Promise<string>} Promise that resolves to the summarized text
+ * @throws {Error} Throws error if API request fails, model is loading, or API key is invalid
+ */
 async function callHuggingFaceAPI(text) {
   try {
     const response = await axios.post(
@@ -297,6 +309,21 @@ async function callHuggingFaceAPI(text) {
   }
 }
 
+/**
+ * Summarizes text using Hugging Face BART model or demo mode fallback
+ * @param {string} text - The text to summarize
+ * @returns {Promise<Object>} Promise that resolves to an object containing:
+ *   - summary: {string} The summarized text
+ *   - originalLength: {number} Original text length in characters
+ *   - summaryLength: {number} Summary length in characters
+ *   - originalWordCount: {number} Original text word count
+ *   - summaryWordCount: {number} Summary word count
+ *   - compressionRatio: {number} Compression ratio as percentage
+ *   - timestamp: {string} ISO timestamp of when summary was generated
+ *   - mode: {string} 'demo' or 'ai' indicating which mode was used
+ *   - fallback: {boolean} [optional] True if fallback to demo mode occurred
+ * @throws {Error} Throws error if summarization fails and no fallback is available
+ */
 async function summarizeText(text) {
   const originalLength = text.length;
   const wordCount = text.split(/\s+/).length;

@@ -412,6 +412,11 @@ function App() {
     }
   }, [inputText, summaryStats]);
 
+  /**
+   * Copies text to the clipboard
+   * @param {string} text - The text to copy to the clipboard
+   * @returns {Promise<void>} Promise that resolves when text is copied
+   */
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
