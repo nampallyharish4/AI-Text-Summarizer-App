@@ -1,5 +1,17 @@
 version = 1
 
+# Exclude generated/transpiled build artifacts from analysis
+exclude = [
+  "**/*.timestamp-*.mjs",
+  "vite.config.ts.timestamp-*.mjs",
+  "**/*.mjs",
+  "dist/**",
+  "node_modules/**",
+  "build/**",
+  ".vite/**",
+  ".cache/**"
+]
+
 [[analyzers]]
 name = "javascript"
 

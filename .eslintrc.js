@@ -25,6 +25,16 @@ module.exports = {
       version: 'detect',
     },
   },
+  ignorePatterns: [
+    '**/*.timestamp-*.mjs',
+    'vite.config.ts.timestamp-*.mjs',
+    '**/*.mjs',
+    'dist/**',
+    'node_modules/**',
+    'build/**',
+    '.vite/**',
+    '.cache/**',
+  ],
   rules: {
     // React specific rules
     'react/react-in-jsx-scope': 'off', // Not needed with new JSX transform
