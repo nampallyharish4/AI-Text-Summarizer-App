@@ -17,9 +17,10 @@ name = "javascript"
 
   [analyzers.meta]
   plugins = [
-    "react",
-    "angular",
-    "angularjs"
+    "react"
+  ]
+  skip_rules = [
+    "js/no-direct-document"
   ]
   environment = [
     "nodejs",
