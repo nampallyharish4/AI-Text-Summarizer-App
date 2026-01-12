@@ -28,9 +28,7 @@ try {
     app.use('/api', summarizeRoutes);
   }
 } catch (error) {
-  console.warn(
-    'Summarize routes not found or failed to load. Continuing without them.'
-  );
+  console.error('❌ Failed to load summarize routes:', error);
 }
 
 // Start server

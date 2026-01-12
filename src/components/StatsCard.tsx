@@ -5,26 +5,30 @@ interface StatsCardProps {
   title: string;
   value: string;
   subtitle: string;
-  icon: string;
+  icon: React.ElementType;
 }
 
-/**
- * StatsCard component for displaying statistics
- * @param {StatsCardProps} props - Component props
- * @returns {JSX.Element} The stats card component
- */
-const StatsCard: React.FC<StatsCardProps> = ({ title, value, subtitle, icon }) => {
+const StatsCard: React.FC<StatsCardProps> = ({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+}) => {
   return (
     <motion.div
       whileHover={{ scale: 1.05, y: -5 }}
-      className="glass-strong rounded-2xl p-6 text-center border-2 border-gray-200 dark:border-gray-700 shadow-xl hover:shadow-2xl transition-all duration-300"
+      className="glass-card rounded-3xl p-6 text-center border border-white/20 dark:border-slate-700/50 shadow-xl"
     >
-      <div className="text-3xl mb-3 p-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 w-16 h-16 flex items-center justify-center mx-auto shadow-lg border border-gray-200 dark:border-gray-600">
-        {icon}
+      <div className="mb-4 p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 w-16 h-16 flex items-center justify-center mx-auto shadow-inner border border-white/20 dark:border-slate-700/30">
+        <Icon className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">{title}</h3>
-      <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{value}</div>
-      <p className="text-gray-600 dark:text-white/70 text-sm">{subtitle}</p>
+      <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">
+        {title}
+      </h3>
+      <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+        {value}
+      </div>
+      <p className="text-slate-600 dark:text-slate-400 text-sm">{subtitle}</p>
     </motion.div>
   );
 };

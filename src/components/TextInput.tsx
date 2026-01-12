@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, AlertCircle } from 'lucide-react';
+import { FileText, AlertCircle, Sparkles } from 'lucide-react';
 
 interface TextInputProps {
   value: string;
@@ -120,23 +120,37 @@ const TextInput: React.FC<TextInputProps> = ({
       </div>
 
       {/* Validation message */}
-      <div className="text-sm text-gray-600 dark:text-gray-300">
-        {characterCount < 200 && (
-          <span className="text-yellow-600 dark:text-yellow-400">
-            Need {200 - characterCount} more characters to summarize
-          </span>
-        )}
-        {characterCount >= 200 && characterCount <= 100000 && (
-          <span className="text-green-600 dark:text-green-400">
-            Ready to summarize!
-          </span>
-        )}
-        {characterCount > 100000 && (
-          <span className="text-red-600 dark:text-red-400">
-            Text too long. Please reduce by {characterCount - 100000}{' '}
-            characters.
-          </span>
-        )}
+      <div className="flex items-center justify-between text-sm">
+        <div className="font-medium">
+          {characterCount < 200 && (
+            <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
+              <AlertCircle className="w-4 h-4" />
+              Need {200 - characterCount} more characters
+            </span>
+          )}
+          {characterCount >= 200 && characterCount <= 100000 && (
+            <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
+              <Sparkles className="w-4 h-4" />
+              Ready to summarize!
+            </span>
+          )}
+          {characterCount > 100000 && (
+            <span className="text-red-600 dark:text-red-400 flex items-center gap-1">
+              <AlertCircle className="w-4 h-4" />
+              Too long (excess: {characterCount - 100000})
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+          <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600 font-sans text-xs">
+            Ctrl
+          </kbd>
+          <span>+</span>
+          <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-600 font-sans text-xs">
+            Enter
+          </kbd>
+        </div>
       </div>
     </motion.div>
   );

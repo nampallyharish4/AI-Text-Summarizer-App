@@ -33,7 +33,7 @@ function createDemoSummary(text) {
   const sentenceRegex = /([^.!?\n]+[.!?]+[\s]*)/g;
   const sentences = [];
   let match = null;
-  
+
   while ((match = sentenceRegex.exec(normalizedText)) !== null) {
     const sentence = match[0].trim();
     if (sentence.length > 10) {
@@ -61,7 +61,9 @@ function createDemoSummary(text) {
       sentences.push(...paragraphSplit);
     } else {
       // Last resort: split by double spaces or return first portion
-      const chunks = normalizedText.split(/\s{2,}/).filter((s) => s.trim().length > 10);
+      const chunks = normalizedText
+        .split(/\s{2,}/)
+        .filter((s) => s.trim().length > 10);
       if (chunks.length > 0) {
         sentences.push(...chunks);
       }
@@ -170,7 +172,8 @@ function createDemoSummary(text) {
     }
 
     // Normalize by sentence length (avoid division by zero)
-    score = sentenceWords.length > 0 ? score / Math.sqrt(sentenceWords.length) : 0;
+    score =
+      sentenceWords.length > 0 ? score / Math.sqrt(sentenceWords.length) : 0;
 
     return { sentence, score, index };
   });
@@ -217,7 +220,10 @@ function createDemoSummary(text) {
   // Ensure we return a meaningful summary
   if (!summary || summary.trim().length === 0) {
     // Fallback: return first portion of text
-    const fallbackLength = Math.min(normalizedText.length, Math.floor(normalizedText.length * 0.4));
+    const fallbackLength = Math.min(
+      normalizedText.length,
+      Math.floor(normalizedText.length * 0.4)
+    );
     return normalizedText.substring(0, fallbackLength).trim() + '...';
   }
 
@@ -326,10 +332,13 @@ async function callHuggingFaceAPI(text) {
  */
 async function summarizeText(text) {
   const originalLength = text.length;
-  const wordCount = text.split(/\s+/).length;
+  const wordCount = text
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 0).length;
 
   try {
-    let summary;
+    let summary = '';
 
     if (!API_KEY || API_KEY === 'your_huggingface_api_key_here') {
       console.log('🔄 Using demo summarization mode');
@@ -347,9 +356,11 @@ async function summarizeText(text) {
         console.log(`📝 Processing ${sanitizedChunkCount} chunks...`);
 
         for (let i = 0; i < chunks.length; i++) {
-          const sanitizedChunkNum = String((i + 1) || 0);
-        const sanitizedTotalChunks = String(chunks.length || 0);
-        console.log(`🔄 Processing chunk ${sanitizedChunkNum}/${sanitizedTotalChunks}`);
+          const sanitizedChunkNum = String(i + 1 || 0);
+          const sanitizedTotalChunks = String(chunks.length || 0);
+          console.log(
+            `🔄 Processing chunk ${sanitizedChunkNum}/${sanitizedTotalChunks}`
+          );
           const chunkSummary = await callHuggingFaceAPI(chunks[i]);
           chunkSummaries.push(chunkSummary);
 
@@ -394,7 +405,10 @@ async function summarizeText(text) {
         !API_KEY || API_KEY === 'your_huggingface_api_key_here' ? 'demo' : 'ai',
     };
   } catch (error) {
-    const sanitizedErrorMessage = error instanceof Error ? String(error.message || 'Unknown error').substring(0, 200) : 'Unknown error';
+    const sanitizedErrorMessage =
+      error instanceof Error
+        ? String(error.message || 'Unknown error').substring(0, 200)
+        : 'Unknown error';
     console.error('❌ Summarization failed:', sanitizedErrorMessage);
 
     if (API_KEY && API_KEY !== 'your_huggingface_api_key_here') {
@@ -473,9 +487,10 @@ router.post('/summarize', async (req, res) => {
 
     return res.json(result);
   } catch (error) {
-    const sanitizedError = error instanceof Error 
-      ? String(error.message || 'Unknown error').substring(0, 200)
-      : String(error || 'Unknown error').substring(0, 200);
+    const sanitizedError =
+      error instanceof Error
+        ? String(error.message || 'Unknown error').substring(0, 200)
+        : String(error || 'Unknown error').substring(0, 200);
     console.error('❌ Summarization error:', sanitizedError);
 
     if (error.message.includes('API key')) {

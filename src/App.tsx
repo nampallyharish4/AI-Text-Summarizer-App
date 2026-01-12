@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Sparkles, Copy, Download, RefreshCw } from 'lucide-react';
+import {
+  Sun,
+  Moon,
+  Sparkles,
+  Copy,
+  Download,
+  RefreshCw,
+  FileText,
+  Zap,
+  BarChart3,
+} from 'lucide-react';
 import TextInput from './components/TextInput';
 import SummaryOutput from './components/SummaryOutput';
 import LoadingAnimation from './components/LoadingAnimation';
@@ -31,11 +41,7 @@ function App() {
   } | null>(null);
 
   const getApiUrl = useCallback((path: string) => {
-    const isDev = import.meta.env.DEV;
-    if (isDev) {
-      return `http://localhost:3001${path}`;
-    }
-    return `/.netlify/functions${path.replace(/^\/api/, '')}`;
+    return path;
   }, []);
 
   const checkApiStatus = useCallback(async () => {
@@ -410,7 +416,7 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  }, [inputText, summaryStats]);
+  }, [inputText, getApiUrl, createDemoSummary]);
 
   /**
    * Copies text to the clipboard
@@ -481,8 +487,9 @@ ${summary}`;
                 className="flex items-center"
                 whileHover={{ scale: 1.05 }}
               >
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-                  AI Text Summarizer
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                  <Sparkles className="w-6 h-6 text-indigo-500" />
+                  <span className="text-gradient">AI Summarizer</span>
                 </h1>
               </motion.div>
 
@@ -529,11 +536,9 @@ ${summary}`;
             transition={{ delay: 0.2 }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-800 dark:text-white mb-6 leading-tight">
+            <h2 className="text-4xl md:text-7xl font-bold text-gray-800 dark:text-white mb-6 leading-tight tracking-tight">
               Transform Long Text into
-              <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Concise Summaries
-              </span>
+              <span className="block text-gradient">Concise Summaries</span>
             </h2>
             <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               Leverage the power of AI to quickly summarize articles, research
@@ -552,7 +557,7 @@ ${summary}`;
               title="Character Count"
               value={inputText.length.toLocaleString()}
               subtitle="characters entered"
-              icon="📝"
+              icon={FileText}
             />
             <StatsCard
               title="Word Count"
@@ -560,14 +565,14 @@ ${summary}`;
                 .split(/\s+/)
                 .filter((word) => word.length > 0)
                 .length.toLocaleString()}
-              subtitle="words to summarize"
-              icon="📊"
+              subtitle="words"
+              icon={BarChart3}
             />
             <StatsCard
               title="Compression"
               value={summaryStats ? `${summaryStats.compressionRatio}%` : '0%'}
-              subtitle="text reduction"
-              icon="⚡"
+              subtitle="text reduced"
+              icon={Zap}
             />
           </motion.div>
 
@@ -614,33 +619,35 @@ ${summary}`;
             className="flex flex-wrap justify-center gap-4"
           >
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleSummarize}
               disabled={isLoading || inputText.length < 200}
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 border border-blue-400 dark:border-blue-600"
+              className="btn-primary"
             >
-              <Sparkles className="w-5 h-5" />
+              <Sparkles
+                className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`}
+              />
               <span>{isLoading ? 'Summarizing...' : 'Summarize Text'}</span>
             </motion.button>
 
             {summary && (
               <>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleCopySummary}
-                  className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/50 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2 border border-gray-200 dark:border-gray-600 shadow-lg"
+                  className="btn-secondary"
                 >
                   <Copy className="w-5 h-5" />
                   <span>Copy Summary</span>
                 </motion.button>
 
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={downloadSummary}
-                  className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/50 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2 border border-gray-200 dark:border-gray-600 shadow-lg"
+                  className="btn-secondary"
                 >
                   <Download className="w-5 h-5" />
                   <span>Download</span>
@@ -649,10 +656,10 @@ ${summary}`;
             )}
 
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
               onClick={clearAll}
-              className="px-6 py-4 glass-strong text-gray-800 dark:text-white font-semibold rounded-2xl hover:bg-white/50 dark:hover:bg-black/70 transition-all duration-300 flex items-center space-x-2 border border-gray-200 dark:border-gray-600 shadow-lg"
+              className="btn-secondary"
             >
               <RefreshCw className="w-5 h-5" />
               <span>Clear All</span>
